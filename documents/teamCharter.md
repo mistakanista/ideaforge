@@ -22,7 +22,7 @@ week 3:
 
 ## Team ideaforge: Working Agreement
 
-###When we meet
+### When we meet
 - Team build sessions: ever day 4 pm, and when it is necessary 
 - How we'll join: Teams 1:1
 
