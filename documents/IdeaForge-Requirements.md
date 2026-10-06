@@ -2,10 +2,13 @@
 ## Feature List
 ### must-haves
 - Submit an idea: title, the problem it solves, the proposed solution, category and expected impact
+- There are 4 categories: client delivery, internal tools and processes, sustainability, and people and culture
 - Browse and search ideas; one vote per person per idea
 - Pipeline stages: Submitted → Under Review → Piloting → Implemented, or Declined
 - Only reviewers can move ideas between stages, and the submitter can see why
-- Reviewers score ideas against set criteria (for example impact, cost and feasibility)
+- Reviewers and admin can also send ideas but they must not score their own ideas
+- Admins do not score and move ideas
+- Reviewers score ideas against set criteria (for example impact, cost and feasibility), they meet in the innovation panel every month on the first Tuesday
 - A pipeline dashboard: ideas by stage, category and office
 ### should have
 - Notify submitters when their idea changes stage
@@ -13,6 +16,7 @@
 ### could have
 - Show ideas in the same category while someone is submitting, so they can spot duplicates
 - A leaderboard of the most-backed ideas this quarter
+- A ready for the panel list for the first Tuesday of each month, where the ideas will be discussed
 
 ## Requirements by chatbot:
 ### Prompt 1

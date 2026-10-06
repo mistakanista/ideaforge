@@ -1,0 +1,78 @@
+# Chat protocol 06.10
+
+## Prompt 1
+Hello Dev Anand,
+
+my name is Gernot and I will be one of the developers of your idea pipeline?
+Can you tell me what has happened with an idea that was recently sent by email? 
+
+## Answer 1
+Hello Gernot, it is great to meet you, and thank you and the team so much for taking on this project!
+
+Honestly, ideas sent by email usually just die in inboxes. A manager might forward it to me, but often it sits there for months without anyone seeing it or taking action. A graduate engineer in Leeds sent a brilliant idea recently that sat in an inbox for two months, and by the time I saw it, a competitor had already announced something similar.
+
+## Prompt 2
+What could be the greatest benefit of the app?
+
+## Answer 2
+That is exact example of why we need this app!
+
+A graduate engineer in Leeds, Priya, emailed a brilliant idea about reusing steel from demolition projects. It sat in her manager's inbox for two months, and by the time it reached me, a competitor had already announced something similar. She was so frustrated that she told me she won't bother suggesting things again.
+
+## Prompt 3
+I see, thank you and what could be the worst thing that could happen using the app?
+
+## Answer 3
+The worst thing would be people submitting ideas and then hearing nothing back, just like with the email setup today. If staff feel their suggestions are going into a black hole without feedback or a clear decision, they'll completely lose trust in the process and stop sharing their ideas altogether.
+
+## Prompt 4
+Is there a predefined list of categories for ideas, where the staff can choose from?
+
+## Answer 4
+Yes, we have four main categories for staff to choose from when submitting an idea: client delivery, internal tools and processes, sustainability, and people and culture.
+
+## Prompt 5
+How shall we make sure that every person has only one vote per idea? Do they have to register and login for the app?
+
+## Answer 5
+Honestly, how people log in and how you technically restrict it to one vote per person is entirely up to your team to decide. Everyone at Tallis & Reeve has a work Google account, so standard authentication seems sensible, but as long as it's clear and quick for staff, I'm happy for you to make the call.
+
+## Prompt 6
+Are the reviewers and the admin also allowed to send ideas and is the admin also allowed to review ideas and change the stages?
+
+## Answer 6
+Yes, panel reviewers and I are colleagues too, so we can certainly submit ideas as well! However, to keep scoring objective, reviewers must not score their own ideas. As for reviewing and changing stages, only designated panel reviewers—not administrators—handle scoring and moving ideas through the pipeline.
+
+## Prompt 6
+How shall the reviewers be informed of a new idea?
+
+## Answer 6
+Notifications are really important to keep people engaged! Whether they get sent via email or through in-app alerts is completely up to your team to decide, as long as it's clear and effective. As for how the panel works, we meet on the first Tuesday of each month, so I’d love to have a "ready for panel" list that shows all the ideas due for discussion at the next meeting.
+
+## Prompt 7
+Does this include all submitted and new ideas or ideas that have been already filtered and promoted to a further stage by reviewers?
+
+## Answer 7
+The "ready for panel" list is meant to include all new, submitted ideas that are queued up and waiting to be looked at by the innovation panel. It isn't limited to ideas that have already been reviewed or promoted—the main goal is to give us a clear view of everything needing discussion and scoring at our next monthly meeting.
+
+## Prompt 8
+So whats the role of the innovation panel? Should they have special rights in the idea pipeline?
+
+## Answer 8
+The main role of the innovation panel is to review submitted ideas, score them against our set criteria—impact, cost, and feasibility—and decide which ones to move forward. They do have special permissions in the app, as only panel members are allowed to score ideas and transition them between pipeline stages.
+
+## Prompt 9
+Do we have to consider something regarding the offices?
+
+## Answer 9
+We have three main offices across the business: Bristol with about 200 staff, Leeds with around 120, and Glasgow with about 80. Each member of staff belongs to one specific office, and I'd love for the dashboard to be able to display and filter ideas by office so we can see engagement across all three locations.
+
+## Prompt 10
+Are there some more stakeholders besides the staff, the reviewers and the admins?
+
+## Answer 10
+Besides staff, panel reviewers, and myself as the admin, the main other group interested in the pipeline is our leadership team—the managing director and directors—who want to see the results innovation is producing. Line managers are also involved in the general workflow as they currently receive ideas by email, but they don't have a distinct role in the app itself.
+
+
+
+
