@@ -73,6 +73,37 @@ Are there some more stakeholders besides the staff, the reviewers and the admins
 ## Answer 10
 Besides staff, panel reviewers, and myself as the admin, the main other group interested in the pipeline is our leadership team—the managing director and directors—who want to see the results innovation is producing. Line managers are also involved in the general workflow as they currently receive ideas by email, but they don't have a distinct role in the app itself.
 
+## Prompt 11
+Are there some conditions regarding the transition in the idea pipeline. For example can the idea be declined in all stages or go the fast lane from submitted to piloting or implemented?
 
+## Answer 11
+An idea can certainly be declined at any stage during the review process, provided the reviewer includes a short, written reason so the submitter understands why. However, ideas shouldn't bypass stages on a "fast lane"—they need to move through the standard pipeline sequence (Submitted → Under Review → Piloting → Implemented) so the panel can score them properly.
 
+By the way, if an idea is declined, we do allow the submitter to resubmit it once with improvements, so people get a fair second chance!
+
+## Prompt 12
+Are there some conditions regarding the transition in the idea pipeline. For example can the idea be declined in all stages or go the fast lane from submitted to piloting or implemented?
+
+## Answer 12
+An idea can certainly be declined at any stage during the review process, provided the reviewer includes a short, written reason so the submitter understands why. However, ideas shouldn't bypass stages on a "fast lane"—they need to move through the standard pipeline sequence (Submitted → Under Review → Piloting → Implemented) so the panel can score them properly.
+
+By the way, if an idea is declined, we do allow the submitter to resubmit it once with improvements, so people get a fair second chance!
+
+## Prompt 13
+Are there non functional requirements for example regarding security, performance or maintenance?
+
+## Answer 13
+From a technical standpoint, our internal IT team is quite small and already stretched thin, so they've explicitly said they won't be able to support a complex system or perform ongoing maintenance. For security, standard authentication via our work Google accounts is fine, but otherwise, I'm non-technical and happy to leave the technical architecture, performance setup, and hosting up to your team. The only critical non-negotiables for me are that it must be completely free to run and easy for our staff to use!
+
+## Prompt 14
+Are there things the idea pipeline must not do?
+
+## Answer 14
+We definitely don't want rewards, points, or prizes for submitting ideas, as leadership has decided against that for now. We also shouldn't hide vote counts, as everyone should be able to see how many votes an idea has received. Finally, the system shouldn't integrate with HR or performance systems, and it must not cost any money to run or require ongoing maintenance from our IT team.
+
+## Prompt 15
+What about the tasks of the admin? He can change the role of users to reviewers and back? What about the reports to the leadership. Should there be something integrated in the app?
+
+## Answer 15
+As the admin, I need to manage categories and panel reviewers, such as assigning or changing who is a reviewer. Regarding leadership reports, I present to them quarterly, so having the dashboard show our idea pipeline—broken down by stage, category, and office—is really all we need integrated to give them a quick two-minute overview.
 

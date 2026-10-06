@@ -4,15 +4,17 @@
 - Submit an idea: title, the problem it solves, the proposed solution, category and expected impact
 - There are 4 categories: client delivery, internal tools and processes, sustainability, and people and culture
 - Browse and search ideas; one vote per person per idea
-- Pipeline stages: Submitted → Under Review → Piloting → Implemented, or Declined
+- Pipeline stages: Submitted → Under Review → Piloting → Implemented, or Declined, an idea can be declined all the times, but it cannot take the fast lane and has to move through all stages
+- A declined idea can be submitted once more (second chance) with improvements
 - Only reviewers can move ideas between stages, and the submitter can see why
 - Reviewers and admin can also send ideas but they must not score their own ideas
-- Admins do not score and move ideas
+- Admins do not score and move ideas, they can change category and make users to reviewers
 - Reviewers score ideas against set criteria (for example impact, cost and feasibility), they meet in the innovation panel every month on the first Tuesday
 - A pipeline dashboard: ideas by stage, category and office
 ### should have
 - Notify submitters when their idea changes stage
 - Comments on ideas
+- The app should work with Google Accounts and should be completely free to us
 ### could have
 - Show ideas in the same category while someone is submitting, so they can spot duplicates
 - A leaderboard of the most-backed ideas this quarter
