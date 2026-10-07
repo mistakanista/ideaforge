@@ -8,3 +8,5 @@ As an employee, reviewer or admin of Tallis & Reeve, I want to see, browse and f
 - [ ] There is a filter option to view ideas by office
 - [ ] There is a search functionality to find specific ideas
 - [ ] There is a filter option for votes
+
+## Status: open

@@ -10,3 +10,5 @@ As a reviewer of Tallis & Reeve, I want change the state of the idea, so that it
 - [ ] the reason includes scores for impact, cost and feasibility
 - [ ] a normal employee must not be able to review an idea
 - [ ] the reviewer must not be able to review his own ideas
+
+## Status: open

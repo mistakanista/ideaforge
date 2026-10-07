@@ -8,3 +8,5 @@ As an employee of Tallis & Reeve, I want to submit an idea through the idea pipe
 - [ ] The submitted idea is stored in the database with a unique identifier
 - [ ] There are four categories selectable: client delivery, internal tools and processes, sustainability, and people and culture
 - [ ] The users office (Bristol, Leeds, Glasgow) is automatically stored with the idea as well as its userId
+
+## Status: open
