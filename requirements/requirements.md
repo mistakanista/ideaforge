@@ -29,3 +29,14 @@ We will try to follow the github and supabase path, as a fallback we will go for
 
 ### must not have
 - the app must not cost anything
+
+## Design rules
+- signature color is T&R copper (`#B9470C`) for buttons and links 
+- T&R navy (`#1B2A41`) for headers
+- Cloud grey (`#F4F5F7`) for backgrounds 
+- IBM Plex Sans font. 
+- [PNG logo](https://drive.google.com/file/d/1AwDg28tMh6ipaCcQtkWDZJ1zPzMoM2Po/view?usp=drive_link) and [SVG logo](https://drive.google.com/file/d/1k0RXz4vdB7GFPNcy8yYfvoGLPwe5Qn3V/view?usp=drive_link).
+- large tap targets
+- visible labels on every field
+- good colour contrast
+- never use colour alone to show status.
