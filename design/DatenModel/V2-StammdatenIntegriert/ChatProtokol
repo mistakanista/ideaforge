@@ -1,0 +1,27 @@
+# Prompt
+ich möchte die Tabellen, die nicht viel Inhalt haben werden, wie zb Role, Stage und Office entweder in  bestehenden Tabellen integrieren oder in ein PRoperties File oder direkt im Code abbilden
+# Response
+Ich stelle das Schema so um, dass die kleinen Stammdaten-Tabellen wegfallen, und teste es danach erneut.
+
+Alle 28 Regeltests laufen durch. Jetzt passe ich die Dokumentation an.
+
+Beide Diagramme rendern fehlerfrei. Ich liefere die Dateien aus und aktualisiere das Projekt.
+
+Das Schema ist umgebaut und hat jetzt 11 statt 16 Tabellen. Ich habe es neu gegen PostgreSQL 16 eingespielt; alle 28 Regeltests laufen durch, darunter 5 neue zu Rollen und Offices.
+
+## Was aus den kleinen Tabellen geworden ist**
+- **`role` und `user_role`** sind jetzt eine Spalte `app_user.role` mit den Werten STAFF, REVIEWER und ADMIN. Das passt, weil sich Admin und Reviewer ohnehin ausschließen und damit jeder Benutzer genau eine Rolle hat. Wer die Rolle zuletzt geändert hat und wann, steht in `role_changed_by` und `role_changed_at`.
+- **`stage`** ist ein ENUM-Typ, also eine feste Werteliste direkt im DDL. Die Reihenfolge der Werte ist die Reihenfolge der Pipeline.
+- **`stage_transition`** ist durch die Funktion `is_valid_transition()` ersetzt, die die sechs erlaubten Übergänge enthält.
+- **`office`** ist jetzt eine Textspalte `app_user.office`. Die Datenbank prüft nur das Format des Codes. Die Liste der Offices steht in `ideaforge.properties`, ein neues Office braucht also keine Datenbankänderung.
+- **`ideaforge.properties`** ist neu. Sie enthält alles, was die App nur anzeigt: Anzeigenamen, die Rechte je Rolle für die Oberfläche, Farben der Stufen und die Office-Liste.
+
+**Was nicht ganz in Code oder Properties wandern kann:** Rollen und Stufen stehen als ENUM weiter im DDL. Nur so kann die Datenbank selbst prüfen, dass nur Reviewer bewerten und verschieben. Lägen die Werte nur in der Properties-Datei, müsste allein die App diese Regeln einhalten. Die Codes wie `REVIEWER` oder `PILOTING` müssen deshalb in DDL und Properties gleich sein. Ein neuer Wert braucht beides: `ALTER TYPE … ADD VALUE` und einen Eintrag in der Datei.
+
+**Bewusst als Tabellen geblieben:** `category` und `scoring_criterion`. Laut Anforderung ändert der Admin die Kategorien im laufenden Betrieb, und Ideen und Bewertungen verweisen per Fremdschlüssel darauf. In einer Properties-Datei bräuchte jede Änderung ein neues Deployment.
+
+**Änderungen im Verhalten:**
+- **Neue Regel:** Der letzte aktive Admin kann weder herabgestuft noch deaktiviert werden. So kann sich die App nicht aussperren.
+- **Verlust:** Es gibt keine Historie der Rollenvergaben mehr, nur die letzte Änderung. Falls ihr einen Audit-Trail braucht, kann ich eine kleine Log-Tabelle ergänzen, die per Trigger befüllt wird.
+
+Die Offices in `ideaforge.properties` (Frankfurt, Berlin, Munich, Remote) sind nur Platzhalter, bitte durch eure echten Standorte ersetzen. Die Dokumentation im Projekt IdeaForge ist auf Version 2 aktualisiert.
