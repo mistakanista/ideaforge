@@ -1,14 +1,19 @@
 # Reuirements
+
+We will try to follow the github and supabase path, as a fallback we will go for the local path
+
 ## Feature List
 ### must-haves
 - US-1 Submit an idea: title, the problem it solves, the proposed solution, category and expected impact
 - US-1 There are 4 categories: client delivery, internal tools and processes, sustainability, and people and culture
 - US-1 Reviewers and admin can also send ideas but they must not score their own ideas
+- US-1 ideas can be marked as confidential, then they are only visible to the submitter and the innovation panel (reviewers)
 - US-2 Browse and search ideas; one vote per person per idea
 - US-2 A pipeline dashboard: ideas by stage, category and office
 - US-3 Pipeline stages: Submitted → Under Review → Piloting → Implemented, or Declined, an idea can be declined all the times, but it cannot take the fast lane and has to move through all stages
 - US-3 Only reviewers can move ideas between stages, and the submitter can see why, admins do not score and move ideas,
-- US-4 Reviewers score ideas against set criteria (for example impact, cost and feasibility), they meet in the innovation panel every month on the first Tuesday
+- US-3 impact, cost and feasibility are expected to be scored from 0 to 5, where cost 5 means least costs
+- US-4 There is only one vote per idea and person
 - US-5 can change category and make users to reviewers
 - US-6 A declined idea can be submitted once more (second chance) with improvements
 

@@ -107,3 +107,32 @@ What about the tasks of the admin? He can change the role of users to reviewers 
 ## Answer 15
 As the admin, I need to manage categories and panel reviewers, such as assigning or changing who is a reviewer. Regarding leadership reports, I present to them quarterly, so having the dashboard show our idea pipeline—broken down by stage, category, and office—is really all we need integrated to give them a quick two-minute overview.
 
+## Prompt 16
+when a reviewer move ideas, is it only the submitter who can see why or everybody?
+
+## Answer 16
+Normally, all staff can see all ideas across the company. The main exception is if an idea is marked as confidential, in which case it is only visible to the submitter and the innovation panel.
+
+## Prompt 17
+is the scoring of an idea for all 3 criteria impact, cost and feasibility obligatory or voluntary. Shall the scoring be numerical eg from 0 to 10 and qualitatively with a text?
+
+## Answer 17
+Scoring each idea on all three criteria—impact, cost, and feasibility—is expected for the panel to review them properly. The panel scores each criterion numerically on a scale from 1 to 5, where 5 for cost means it's cheap to implement.
+
+## Prompt 18
+so the reviewers wont score the ideas, they only give the reason why the idea was moved in another state?
+
+## Answer 18
+No, the panel reviewers do both! They score the idea against our criteria—impact, cost, and feasibility—and they also move it to the next stage (or decline it) with a short written explanation so the submitter understands the decision.
+
+## Prompt 19
+Are the ideas marked confidential a should have or could have because they are not in the requirements?
+
+## Answer 19
+Being able to mark an idea as confidential is a core requirement for us because some ideas involve sensitive client or commercial information. Whether you categorize that feature as a "Should Have" or "Could Have" in your project prioritization framework is entirely up to your team to decide, as long as the functionality is built in so confidential ideas are protected.
+
+## Prompt 20
+The requirement browse and search ideas could be also part of the dashboard or shall it be an extra page?
+
+## Answer 20
+I'm happy for you to decide whether browsing and searching live on a separate page or sit right within the dashboard. As long as it's clean, intuitive, and quick for staff to find what they're looking for, the exact page layout is entirely your call.
