@@ -1,69 +1,73 @@
-# IdeaForge – Klick-Prototyp (Vite + React)
+# IdeaForge – Click Prototype (Vite + React)
 
-Prototyp für drei Kernseiten der Idea Pipeline, mit Beispieldaten im Browser:
+Prototype of the three core pages of the Idea Pipeline, with demo data in the browser:
 
-| Seite | Route | Anforderung |
+| Page | Route | Requirement |
 |---|---|---|
-| Dashboard: Suche, Filter (Kategorie, Office, Stage), Declined ausblendbar, Sortierung neueste / meiste Votes, Voting, Details, 10/20/50 pro Seite | `/dashboard` | US-2, US-4 |
-| Idee einreichen (inkl. vertraulich) | `/submit` | US-1 |
-| Admin: User und Rollen, Kategorien | `/admin` | US-5 |
+| Dashboard: search, filters (category, office, stage), declined ideas can be hidden, sorting by newest / most votes, voting, details, 10/20/50 per page | `/dashboard` | US-2, US-4 |
+| Submit an idea (incl. confidential) | `/submit` | US-1 |
+| Admin: users and roles, categories | `/admin` | US-5 |
 
-## Starten
+## Getting started
 
 ```bash
 npm install
 npm run dev        # http://localhost:5800
-npm run test       # Unit-Tests für Filter, Sortierung, Sichtbarkeit, Pagination
-npm run build      # TypeScript-Prüfung + Produktions-Build
+npm run test       # unit tests for filters, sorting, visibility, pagination
+npm run build      # TypeScript check + production build
 ```
 
-## Testen mit verschiedenen Rollen
-Oben rechts „Acting as“ wählt den simulierten User (US-5: „The user can be simulated for tests“):
-- **Daniel Okafor** – Staff (Standard)
+## Testing with different roles
+"Acting as" in the top right selects the simulated user (US-5: "The user can be simulated for tests"):
+- **Daniel Okafor** – Staff (default)
 - **Ruth Evans, Tom Hallworth, Aisha Rahman** – Reviewer
 - **Priya Shah** – Admin
 
-Alle Änderungen liegen nur im `localStorage` dieses Browsers. „Reset demo data“ im Footer stellt die Beispieldaten wieder her.
+All changes are stored only in the `localStorage` of this browser. "Reset demo data" in the footer restores the demo data.
 
-## Aufbau
+## Structure
 
 ```
 src/
-  config.ts              Labels und Farben für Stages, Rollen, Offices, Score-Kriterien
-  types.ts               Typen nach Datenmodell V2 (snake_case wie die DB)
-  data/repository.ts     Schnittstelle der Datenschicht
-  data/mockRepository.ts Implementierung mit localStorage (prüft dieselben Regeln wie später die DB)
-  data/seed.ts           60 Beispiel-Ideen, 12 User, 4 Kategorien, Scores, Verlauf
-  data/supabaseClient.ts vorbereiteter Supabase-Client
-  data/index.ts          wählt die Datenquelle über VITE_DATA_SOURCE
-  lib/ideaQuery.ts       Sichtbarkeit, Suche, Filter, Sortierung, Pagination (+ Tests)
-  session/CurrentUser.tsx simulierter Login
-  pages/, components/    Seiten und Bausteine
+  config.ts              labels and colours for stages, roles, offices, score criteria
+  types.ts               types following data model V2 (snake_case like the database)
+  data/repository.ts     interface of the data layer
+  data/mockRepository.ts implementation with localStorage (checks the same rules as the database later)
+  data/seed.ts           60 demo ideas, 12 users, 4 categories, scores, history
+  data/supabaseClient.ts prepared Supabase client
+  data/index.ts          selects the data source via VITE_DATA_SOURCE
+  lib/ideaQuery.ts       visibility, search, filters, sorting, pagination (+ tests)
+  session/CurrentUser.tsx simulated login
+  pages/, components/    pages and building blocks
 ```
 
-Die Seiten greifen nur über `repository` aus `src/data/index.ts` auf Daten zu.
+The pages access data only through `repository` from `src/data/index.ts`.
 
-## Später: Wechsel auf Supabase
-1. Schema aus `design/DatenModel/V2-StammdatenIntegriert` in Supabase anlegen. Dabei die Spalte `idea.is_confidential` ergänzen.
-2. RLS-Policies anlegen:
-   - vertrauliche Ideen nur für Submitter und Reviewer;
-   - Admin-Funktionen nur für Admins;
-   - Votes nur für sich selbst.
-3. `src/data/supabaseRepository.ts` schreiben, das `IdeaRepository` implementiert. Dafür `createSupabaseClient()` nutzen und den Repository-Wechsel in `src/data/index.ts` eintragen.
-4. `.env` aus `.env.example` anlegen und `VITE_DATA_SOURCE=supabase` sowie URL und Anon-Key eintragen.
-5. Den simulierten Login (`session/CurrentUser.tsx`) durch Google-Login über Supabase Auth ersetzen (US-9).
+## Later: switching to Supabase
+1. Create the schema from `design/DatenModel/V2-StammdatenIntegriert` in Supabase. Add the column `idea.is_confidential`.
+2. Create RLS policies:
+   - confidential ideas only for the submitter and reviewers;
+   - admin functions only for admins;
+   - votes only for oneself.
+3. Write `src/data/supabaseRepository.ts`, which implements `IdeaRepository`. Use `createSupabaseClient()` for this and register the new repository in `src/data/index.ts`.
+4. Create `.env` from `.env.example` and set `VITE_DATA_SOURCE=supabase` as well as the URL and anon key.
+5. Replace the simulated login (`session/CurrentUser.tsx`) with Google login via Supabase Auth (US-9).
 
-Filter, Sortierung und Pagination laufen im Prototyp im Browser. Bei vielen Ideen sollten sie in die Abfrage wandern (`range()`, `order()`, Volltextsuche über `search_vector`). `lib/ideaQuery.ts` beschreibt das gewünschte Verhalten und dient dafür als Vorlage.
+In the prototype, filters, sorting and pagination run in the browser. With many ideas they should move into the query (`range()`, `order()`, full-text search via `search_vector`). `lib/ideaQuery.ts` describes the intended behaviour and serves as the template for this.
 
-## Annahmen
-- **Stage-Codes** wie im Datenmodell (`UNDER_REVIEW` usw.). Angezeigt wird „Reviewing“ laut User Journey; änderbar in `config.ts`.
-- **Offices** Bristol, Leeds und Glasgow laut US-1. `ideaforge.properties` enthält noch Beispielwerte.
-- **Das Office einer Idee** ist das Office der einreichenden Person (`app_user.office`), wie im Datenmodell V2.
-- **Scores** 1–5 für Costs, Feasibility und Impact, höher ist immer besser (Cost 5 = geringste Kosten).
-- **Bewerten und Stage ändern** sind bewusst noch nicht enthalten. Die Details zeigen Scores und Verlauf nur an.
+## Assumptions
+- **Stage codes** as in the data model (`UNDER_REVIEW` etc.). "Reviewing" is displayed, as in the user journey; this can be changed in `config.ts`.
+- **Offices** Bristol, Leeds and Glasgow as in US-1. `ideaforge.properties` still contains example values.
+- **The office of an idea** is the office of the person who submitted it (`app_user.office`), as in data model V2.
+- **Scores** 1–5 for costs, feasibility and impact; higher is always better (cost 5 = lowest cost).
+- **Scoring and changing stages** are deliberately not included yet. The details only display scores and history.
 
-## Offene Punkte
-1. `is_confidential` fehlt im Datenmodell V2 und muss ergänzt werden.
-2. Sind Scores in den Details für alle sichtbar (so im Prototyp) oder nur für Submitter und Reviewer?
-3. Wie heißt die Stage endgültig: „Reviewing“ oder „Under Review“?
-4. Soll das Office zum Zeitpunkt der Einreichung an der Idee gespeichert werden (US-1), statt es vom User abzuleiten?
+## Open points
+1. `is_confidential` is missing in data model V2 and has to be added.
+2. Are the scores in the details visible to everyone (as in the prototype) or only to the submitter and reviewers?
+3. What is the final name of the stage: "Reviewing" or "Under Review"?
+4. Should the office be stored with the idea at the time of submission (US-1) instead of being taken from the user?
+
+## Test Google Login 
+- Url: https://owwdzjerddgavqjqxrru.supabase.co/auth/v1/authorize?provider=google&redirect_to=http://localhost:5800
+- creates an google account in supabase

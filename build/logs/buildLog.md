@@ -11,3 +11,6 @@
 
 ## 2026-10-09 23:00
 - Supabase database: first migration `build/supabase/migrations/20261009205516_app_user.sql` (enum `user_role`, table `app_user` linked to `auth.users`, trigger creating an `app_user` row with role STAFF on each new Google/Auth user, last-login sync, role rules from data model V2 incl. bootstrap admin and last-admin protection, RLS: signed-in users read, users edit own name/office, only admins change roles). Rule tests `build/supabase/tests/app_user_test.sql` (pgTAP, 24 tests) all pass against local Supabase (Docker); `supabase db lint` reports no errors. Not yet pushed to the cloud project.
+
+## 2026-10-09 23:52
+- Translated `build/frontend/README.md` to English (content unchanged) and updated the README heading reference in `build/frontend/src/types.ts`. No functional code changed.

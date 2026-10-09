@@ -35,7 +35,7 @@ export interface Idea {
   category_id: number;
   submitter_id: number;
   current_stage: IdeaStage;
-  /** Not yet part of data model V2, see README "Offene Punkte". */
+  /** Not yet part of data model V2, see README "Open points". */
   is_confidential: boolean;
   resubmission_of: number | null;
   attempt_no: 1 | 2;
