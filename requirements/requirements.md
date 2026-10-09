@@ -8,6 +8,7 @@ We will try to follow the github and supabase path, as a fallback we will go for
 - US-1 There are 4 categories: client delivery, internal tools and processes, sustainability, and people and culture
 - US-1 Reviewers and admin can also send ideas but they must not score their own ideas
 - US-1 ideas can be marked as confidential, then they are only visible to the submitter and the innovation panel (reviewers)
+- US-1 if an idea is marked confidential, then it stays confidential also after implementation
 - US-2 Browse and search ideas; one vote per person per idea
 - US-2 A pipeline dashboard: ideas by stage, category and office
 - US-3 Pipeline stages: Submitted → Under Review → Piloting → Implemented, or Declined, an idea can be declined all the times, but it cannot take the fast lane and has to move through all stages
@@ -26,6 +27,7 @@ We will try to follow the github and supabase path, as a fallback we will go for
 - Show ideas in the same category while someone is submitting, so they can spot duplicates
 - A leaderboard of the most-backed ideas this quarter
 - A ready for the panel list for the first Tuesday of each month, where the ideas will be discussed
+- Users can edit their ideas
 
 ### must not have
 - the app must not cost anything
@@ -39,4 +41,4 @@ We will try to follow the github and supabase path, as a fallback we will go for
 - large tap targets
 - visible labels on every field
 - good colour contrast
-- never use colour alone to show status.
+- never use color alone to show status.

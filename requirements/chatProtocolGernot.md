@@ -136,3 +136,9 @@ The requirement browse and search ideas could be also part of the dashboard or s
 
 ## Answer 20
 I'm happy for you to decide whether browsing and searching live on a separate page or sit right within the dashboard. As long as it's clean, intuitive, and quick for staff to find what they're looking for, the exact page layout is entirely your call.
+
+## Prompt 21
+Shall confidential ideas stay confidential even after the implementation and shall the users be able to edit their ideas and change eg the confidential status?
+
+## Answer 21
+Yes, confidential ideas should stay confidential throughout their entire lifespan, even after they reach the implemented stage—they must remain visible only to the submitter and the innovation panel. As for allowing users to edit their ideas or change the confidentiality status, I haven't really thought about that. What would you suggest? I'm happy for your team to decide how editing should work, as long as it's clear and works for our colleagues—just make a note of what you decide!
