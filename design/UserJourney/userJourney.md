@@ -1,230 +1,230 @@
-# IdeaForge: User Journey einer Idee
+# IdeaForge: User Journey of an Idea
 
-Die Reise einer Idee von der Einreichung bis zur Umsetzung oder Ablehnung, für normale und für **vertrauliche** Ideen.
-Quellen: `requirements/requirements.md`, `requirements/UserStories/1–10`, `CLAUDE.md`, `design/DatenModel/V2-StammdatenIntegriert/ideaforge_datenmodell.md` sowie Vorgaben aus dem Chat vom 2026-10-08.
+The journey of an idea from submission to implementation or rejection, for normal and for **confidential** ideas.
+Sources: `requirements/requirements.md`, `requirements/UserStories/1–10`, `CLAUDE.md`, `design/DatenModel/V2-StammdatenIntegriert/ideaforge_datenmodell.md` and decisions from the chat on 2026-10-08.
 
-## 1. Rollen & Rechte
+## 1. Roles & permissions
 
-| Aktion | Staff | Reviewer / Innovation Panel | Admin |
+| Action | Staff | Reviewer / Innovation Panel | Admin |
 |---|---|---|---|
-| Idee einreichen | ✅ | ✅ | ✅ |
-| Dashboard ansehen, suchen, filtern | ✅ | ✅ | ✅ |
-| Vertrauliche Ideen sehen | nur eigene | ✅ | nur eigene |
-| Voten (1 Stimme pro Person und Idee) | ✅ | ✅ | ✅ |
-| Kommentieren | ✅ | ✅ | ✅ |
-| Idee bewerten (Score 1–5) | ❌ | ✅, aber **nie die eigene Idee** | ❌ |
-| Stage ändern / ablehnen | ❌ | ✅, aber **nie die eigene Idee** | ❌ |
-| User und Kategorien verwalten | ❌ | ❌ | ✅ |
+| Submit an idea | ✅ | ✅ | ✅ |
+| View, search and filter the dashboard | ✅ | ✅ | ✅ |
+| See confidential ideas | own only | ✅ | own only |
+| Vote (1 vote per person and idea) | ✅ | ✅ | ✅ |
+| Comment | ✅ | ✅ | ✅ |
+| Score an idea (1–5) | ❌ | ✅, but **never their own idea** | ❌ |
+| Change stage / decline | ❌ | ✅, but **never their own idea** | ❌ |
+| Manage users and categories | ❌ | ❌ | ✅ |
 
-## 2. Normale und vertrauliche Idee im Vergleich
+## 2. Normal and confidential ideas compared
 
-Regel aus `CLAUDE.md` und US-1: Vertrauliche Ideen sind **nur für den Submitter und die Reviewer (Innovation Panel)** sichtbar. Ablauf, Stages, Bewertung, Ablehnung und Second Chance sind identisch, nur die Sichtbarkeit unterscheidet sich.
+Rule from `CLAUDE.md` and US-1: confidential ideas are visible **only to the submitter and the reviewers (Innovation Panel)**. Flow, stages, scoring, declining and second chance are identical; only the visibility differs.
 
-| Schritt | Normale Idee | Vertrauliche Idee |
+| Step | Normal idea | Confidential idea |
 |---|---|---|
-| Sichtbarkeit | alle User | nur Submitter und Reviewer; **nicht** Kolleg:innen, **nicht** Admins |
-| Dashboard / Suche | für alle auffindbar | nur in der Ansicht von Submitter und Reviewern |
-| Voten | alle User | nur wer die Idee sieht (Submitter, Reviewer) |
-| Kommentare | alle User | nur Submitter und Reviewer |
-| Bewerten / Stage ändern | Reviewer, nie die eigene Idee | gleich |
-| Benachrichtigungen | an den Submitter | gleich |
-| Stages, Ablehnung, Second Chance | Submitted → Reviewing → Piloting → Implemented, Declined | gleich |
+| Visibility | all users | submitter and reviewers only; **not** colleagues, **not** admins |
+| Dashboard / search | findable by everyone | only in the view of the submitter and reviewers |
+| Voting | all users | only those who can see the idea (submitter, reviewers) |
+| Comments | all users | submitter and reviewers only |
+| Scoring / changing stage | reviewers, never their own idea | same |
+| Notifications | to the submitter | same |
+| Stages, declining, second chance | Submitted → Reviewing → Piloting → Implemented, Declined | same |
 
-## 3. User Journey
+## 3. User journey
 
-Die Werte zeigen die Zufriedenheit je Schritt: 1 = frustriert, 5 = begeistert. Die Beschriftungen sind bewusst kurz, weil Mermaid lange Texte in diesem Diagrammtyp abschneidet.
+The values show the satisfaction per step: 1 = frustrated, 5 = delighted. The labels are kept short on purpose, because Mermaid cuts off long texts in this diagram type.
 
 ```mermaid
 journey
-    title User Journey einer Idee in IdeaForge
-    section Einreichen
-      Mit Google anmelden: 4: Submitter
-      Formular ausfüllen: 3: Submitter
-      Ähnliche Ideen prüfen: 3: Submitter
-      Optional vertraulich: 4: Submitter
-      Absenden, Submitted: 5: Submitter
+    title User journey of an idea in IdeaForge
+    section Submit
+      Sign in with Google: 4: Submitter
+      Fill in the form: 3: Submitter
+      Check similar ideas: 3: Submitter
+      Optionally confidential: 4: Submitter
+      Submit, stage Submitted: 5: Submitter
     section Feedback normal
-      Im Dashboard sichtbar: 5: Submitter, Kollegen
-      Voten: 4: Kollegen
-      Kommentieren: 4: Kollegen
-      Info über Kommentar: 4: Submitter
-    section Feedback vertraulich
-      Nur Submitter und Reviewer: 5: Submitter, Reviewer
-      Kollegen und Admins sehen nichts: 4: Submitter
-      Rückfrage eines Reviewers: 4: Reviewer, Submitter
+      Visible in dashboard: 5: Submitter, Colleagues
+      Vote: 4: Colleagues
+      Comment: 4: Colleagues
+      Notified about comment: 4: Submitter
+    section Feedback confidential
+      Submitter and reviewers only: 5: Submitter, Reviewer
+      Colleagues and admins see nothing: 4: Submitter
+      Question from a reviewer: 4: Reviewer, Submitter
     section Review
       Stage Reviewing: 4: Reviewer, Submitter
-      Score Costs, Feasibility, Impact: 3: Reviewer
-      Panel bespricht: 3: Innovation Panel
-      Weiter oder ablehnen: 3: Innovation Panel, Submitter
+      Score costs, feasibility, impact: 3: Reviewer
+      Panel discusses: 3: Innovation Panel
+      Move on or decline: 3: Innovation Panel, Submitter
     section Pilot
       Stage Piloting: 5: Submitter, Innovation Panel
-      Pilot bewerten: 3: Reviewer
-    section Umsetzung
+      Evaluate pilot: 3: Reviewer
+    section Implementation
       Stage Implemented: 5: Submitter, Innovation Panel
-    section Ablehnung
-      Begründung lesen: 2: Submitter
-      Einmal neu einreichen: 3: Submitter
+    section Declined
+      Read the reason: 2: Submitter
+      Resubmit once: 3: Submitter
 ```
 
-Je nach Markierung durchläuft eine Idee **entweder** „Feedback normal“ **oder** „Feedback vertraulich“.
+Depending on the flag, an idea goes through **either** "Feedback normal" **or** "Feedback confidential".
 
-## 4. Ablauf mit Entscheidungen
+## 4. Flow with decisions
 
 ```mermaid
 flowchart TD
-    subgraph SUB["Submitter (jeder User)"]
-        A([Start: Login mit Google]) --> B["Idee anlegen:<br/>Titel, Problem, Lösung,<br/>Kategorie, erwarteter Impact"]
-        B --> C{"Vertraulich?"}
-        C -- ja --> C1["Nur für Submitter und<br/>Reviewer sichtbar"]
-        C -- nein --> C2["Für alle sichtbar"]
-        C1 --> D["Absenden<br/>Office und User werden<br/>automatisch gespeichert"]
+    subgraph SUB["Submitter (any user)"]
+        A([Start: sign in with Google]) --> B["Create idea:<br/>title, problem, solution,<br/>category, expected impact"]
+        B --> C{"Confidential?"}
+        C -- yes --> C1["Visible to submitter<br/>and reviewers only"]
+        C -- no --> C2["Visible to everyone"]
+        C1 --> D["Submit<br/>office and user are<br/>stored automatically"]
         C2 --> D
-        N1["Benachrichtigung über<br/>Stage-Wechsel und Begründung"]
-        R1{"Schon einmal<br/>abgelehnt worden?"}
-        R1 -- "nein, 1. Ablehnung" --> R2["Überarbeiten und<br/>einmal neu einreichen<br/>(Second Chance)"]
-        R1 -- "ja, 2. Ablehnung" --> X([Endgültig abgelehnt])
+        N1["Notification about<br/>stage change and reason"]
+        R1{"Declined<br/>before?"}
+        R1 -- "no, 1st decline" --> R2["Improve and<br/>resubmit once<br/>(second chance)"]
+        R1 -- "yes, 2nd decline" --> X([Finally declined])
         R2 --> B
     end
 
-    subgraph ALL["Alle User, die die Idee sehen dürfen"]
-        E["Dashboard: suchen, filtern<br/>nach Kategorie, Office, Votes"]
-        F["Voten<br/>(1 Stimme pro Person)"]
-        G["Kommentieren"]
+    subgraph ALL["All users allowed to see the idea"]
+        E["Dashboard: search, filter<br/>by category, office, votes"]
+        F["Vote<br/>(1 vote per person)"]
+        G["Comment"]
         E --> F
         E --> G
     end
 
     subgraph REV["Reviewer / Innovation Panel"]
-        H{"Eigene Idee?"}
-        H -- ja --> H1["Anderer Reviewer<br/>übernimmt"]
+        H{"Own idea?"}
+        H -- yes --> H1["Another reviewer<br/>takes over"]
         H1 --> I
-        H -- nein --> I["Bewerten je 1 bis 5:<br/>Costs, Feasibility, Impact"]
-        I --> J{"Entscheidung"}
-        J -- weiter --> K["Nächste Stage<br/>(kein Überspringen)"]
-        J -- ablehnen --> L["Begründung angeben<br/>(Pflicht)"]
+        H -- no --> I["Score 1 to 5 each:<br/>costs, feasibility, impact"]
+        I --> J{"Decision"}
+        J -- move on --> K["Next stage<br/>(no skipping)"]
+        J -- decline --> L["Give a reason<br/>(required)"]
         L --> M["Stage: Declined"]
     end
 
     D --> S1[["Stage: Submitted"]]
-    S1 -- "normal: alle<br/>vertraulich: nur Submitter<br/>und Reviewer" --> E
+    S1 -- "normal: everyone<br/>confidential: submitter<br/>and reviewers only" --> E
     S1 --> H
     K --> S2[["Submitted → Reviewing<br/>→ Piloting → Implemented"]]
-    S2 -- "noch nicht Implemented" --> H
-    S2 -- "Implemented" --> Z([Idee umgesetzt])
+    S2 -- "not yet Implemented" --> H
+    S2 -- "Implemented" --> Z([Idea implemented])
     K --> N1
     M --> N1
     G --> N1
-    N1 -- "bei Declined" --> R1
+    N1 -- "if Declined" --> R1
 ```
 
-Hinweis: Admins reichen wie alle anderen Ideen ein, bewerten aber nicht und verschieben keine Stages.
+Note: admins submit ideas like everyone else, but they do not score ideas or move stages.
 
-## 5. Sichtbarkeit einer vertraulichen Idee
+## 5. Visibility of a confidential idea
 
 ```mermaid
 flowchart LR
-    I[["Vertrauliche Idee"]]
-    I -- "sieht, kommentiert,<br/>erhält Benachrichtigungen" --> S["Submitter"]
-    I -- "sieht, kommentiert,<br/>bewertet, ändert Stage" --> R["Reviewer / Innovation Panel"]
-    I -. "nicht sichtbar" .-> K["Kolleginnen und Kollegen"]
-    I -. "nicht sichtbar" .-> A["Admin"]
-    R --> C{"Eigene Idee?"}
-    C -- ja --> C1["Darf nur sehen,<br/>nicht bewerten"]
-    C -- nein --> C2["Darf bewerten<br/>und Stage ändern"]
+    I[["Confidential idea"]]
+    I -- "sees, comments,<br/>gets notifications" --> S["Submitter"]
+    I -- "sees, comments,<br/>scores, changes stage" --> R["Reviewer / Innovation Panel"]
+    I -. "not visible" .-> K["Colleagues"]
+    I -. "not visible" .-> A["Admin"]
+    R --> C{"Own idea?"}
+    C -- yes --> C1["May only view,<br/>not score"]
+    C -- no --> C2["May score<br/>and change stage"]
 ```
 
-## 6. Sequenz: wer macht was?
+## 6. Sequence: who does what?
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor S as Submitter
     participant App as IdeaForge
-    actor K as Kollegen und Admins
+    actor K as Colleagues and admins
     actor R as Reviewer
     actor P as Innovation Panel
 
-    S->>App: Idee anlegen (Titel, Problem, Lösung, Kategorie, Impact, optional vertraulich)
-    App-->>S: Gespeichert mit ID, Stage Submitted
-    alt Idee ist nicht vertraulich
-        K->>App: Voten und kommentieren
-        App-->>S: Benachrichtigung über Kommentar
-    else Idee ist vertraulich
-        K-xApp: Dashboard und Suche
-        Note over K,App: Vertrauliche Idee wird nicht angezeigt
-        R->>App: Rückfrage als Kommentar
-        App-->>S: Benachrichtigung über Kommentar
-        S->>App: Antwort als Kommentar
+    S->>App: Create idea (title, problem, solution, category, impact, optionally confidential)
+    App-->>S: Saved with ID, stage Submitted
+    alt Idea is not confidential
+        K->>App: Vote and comment
+        App-->>S: Notification about comment
+    else Idea is confidential
+        K-xApp: Dashboard and search
+        Note over K,App: Confidential idea is not shown
+        R->>App: Question as a comment
+        App-->>S: Notification about comment
+        S->>App: Answer as a comment
     end
-    R->>App: Stage auf Reviewing setzen
-    App-->>S: Benachrichtigung über Stage-Wechsel
-    R->>App: Bewertung Costs, Feasibility, Impact (je 1 bis 5)
-    Note over R,App: Nicht erlaubt bei eigener Idee. Admins bewerten nicht.
-    R->>P: Idee mit Scores für das Panel vorbereiten
-    alt Panel stimmt zu
-        P->>App: Stage auf Piloting setzen, mit Begründung
-        App-->>S: Benachrichtigung mit Begründung
-        P->>App: Nach erfolgreichem Pilot Stage auf Implemented setzen
-        App-->>S: Benachrichtigung: Idee umgesetzt
-    else Panel lehnt ab (in jeder aktiven Stage möglich)
-        P->>App: Stage auf Declined setzen, Begründung Pflicht
-        App-->>S: Benachrichtigung mit Begründung
-        opt Erste Ablehnung
-            S->>App: Überarbeitete Idee einmal neu einreichen
+    R->>App: Set stage to Reviewing
+    App-->>S: Notification about stage change
+    R->>App: Score costs, feasibility, impact (1 to 5 each)
+    Note over R,App: Not allowed for own idea. Admins do not score.
+    R->>P: Prepare idea with scores for the panel
+    alt Panel agrees
+        P->>App: Set stage to Piloting, with reason
+        App-->>S: Notification with reason
+        P->>App: After a successful pilot, set stage to Implemented
+        App-->>S: Notification: idea implemented
+    else Panel declines (possible in every active stage)
+        P->>App: Set stage to Declined, reason required
+        App-->>S: Notification with reason
+        opt First decline
+            S->>App: Resubmit the improved idea once
         end
     end
 ```
 
-## 7. Stage-Modell
+## 7. Stage model
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Submitted : Jeder User reicht ein
+    [*] --> Submitted : Any user submits
     Submitted --> Reviewing : Reviewer
-    Reviewing --> Piloting : Panel, nach Bewertung
+    Reviewing --> Piloting : Panel, after scoring
     Piloting --> Implemented : Panel
     Implemented --> [*]
 
-    Submitted --> Declined : Begründung Pflicht
-    Reviewing --> Declined : Begründung Pflicht
-    Piloting --> Declined : Begründung Pflicht
+    Submitted --> Declined : Reason required
+    Reviewing --> Declined : Reason required
+    Piloting --> Declined : Reason required
 
-    Declined --> Submitted : Second Chance, nur einmal
-    Declined --> [*] : nach 2. Ablehnung endgültig
+    Declined --> Submitted : Second chance, once only
+    Declined --> [*] : final after 2nd decline
 
     note right of Reviewing
-        Score je 1 bis 5
+        Score 1 to 5 each
         Costs, Feasibility, Impact
-        Nur Reviewer und Panel,
-        nie die eigene Idee
+        Reviewers and panel only,
+        never their own idea
     end note
 ```
 
-Regeln, gültig für normale und vertrauliche Ideen:
-- Keine Stage darf übersprungen werden.
-- Ablehnen geht aus jeder aktiven Stage.
-- Nur Reviewer bzw. das Innovation Panel ändern Stages.
-- Der Submitter sieht bei jedem Wechsel die Begründung.
+Rules for normal and confidential ideas:
+- No stage may be skipped.
+- An idea can be declined from every active stage.
+- Only reviewers or the Innovation Panel change stages.
+- The submitter sees the reason for every change.
 
-## 8. Offene Punkte
+## 8. Open points
 
-### Abweichungen zu bestehenden Dokumenten
+### Differences from existing documents
 
-| # | Thema | Diese User Journey | Bestehende Dokumente | Zu klären |
+| # | Topic | This user journey | Existing documents | To clarify |
 |---|---|---|---|---|
-| 1 | Name der 2. Stage | **Reviewing** | „Under Review“ (requirements.md, US-3), `UNDER_REVIEW` (Datenmodell V2) | Einheitlichen Namen festlegen und Dokumente angleichen |
-| 2 | Score-Skala | **1–5** | 0–5 (requirements.md, US-3) | Skala festlegen, `scoring_criterion.min_score` anpassen |
-| 3 | Bedeutung Cost-Score | – | „cost 5 means least costs“ (requirements.md) | Bestätigen: 5 = geringste Kosten, damit gilt überall „höher = besser“ |
-| 4 | Begründung | Pflicht bei Ablehnung | US-3: Begründung mit Scores bei **jedem** Stage-Wechsel; Datenmodell: `reason` immer Pflicht | Pflicht nur bei Ablehnung oder bei jedem Wechsel? |
-| 5 | Second Chance | Abgelehnte Idee einmal neu einreichen | Datenmodell: als **neue** Idee mit `attempt_no = 2` | Diagramm vereinfacht das als Rückkehr zu Submitted |
+| 1 | Name of the 2nd stage | **Reviewing** | "Under Review" (requirements.md, US-3), `UNDER_REVIEW` (data model V2) | Agree on one name and align the documents |
+| 2 | Score scale | **1–5** | 0–5 (requirements.md, US-3) | Decide the scale, adjust `scoring_criterion.min_score` |
+| 3 | Meaning of the cost score | – | "cost 5 means least costs" (requirements.md) | Confirm: 5 = lowest cost, so "higher = better" applies everywhere |
+| 4 | Reason | Required when declining | US-3: reason with scores for **every** stage change; data model: `reason` always required | Required only when declining or for every change? |
+| 5 | Second chance | Resubmit a declined idea once | Data model: as a **new** idea with `attempt_no = 2` | The diagram simplifies this as a return to Submitted |
 
-### Vertrauliche Ideen (nicht in den Requirements geregelt)
+### Confidential ideas (not covered by the requirements)
 
-| # | Frage | Warum relevant |
+| # | Question | Why it matters |
 |---|---|---|
-| 6 | Bleibt eine vertrauliche Idee auch nach **Implemented** vertraulich, oder wird sie dann öffentlich? | Umgesetzte Ideen sind oft für alle interessant |
-| 7 | Darf der Submitter die Markierung „vertraulich“ später **ändern**? | Nicht in den Requirements geregelt |
-| 8 | Übernimmt eine neu eingereichte Idee (Second Chance) die Markierung? | Neue Idee mit `attempt_no = 2` im Datenmodell |
-| 9 | Zählen vertrauliche Ideen in den **Dashboard-Statistiken** (nach Stage, Kategorie, Office) mit, z. B. anonym als Anzahl? | US-2 Dashboard für alle User |
-| 10 | Dürfen Reviewer vertrauliche Ideen **voten**? | Voting ist sonst ein Signal der Kolleg:innen, das hier fehlt |
+| 6 | Does a confidential idea stay confidential after **Implemented**, or does it become public? | Implemented ideas are often interesting for everyone |
+| 7 | May the submitter **change** the confidential flag later? | Not covered by the requirements |
+| 8 | Does a resubmitted idea (second chance) keep the flag? | New idea with `attempt_no = 2` in the data model |
+| 9 | Do confidential ideas count in the **dashboard statistics** (by stage, category, office), e.g. anonymously as a number? | US-2 dashboard for all users |
+| 10 | May reviewers **vote** on confidential ideas? | Otherwise voting is a signal from colleagues, which is missing here |
