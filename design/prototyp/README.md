@@ -12,7 +12,7 @@ Prototyp für drei Kernseiten der Idea Pipeline, mit Beispieldaten im Browser:
 
 ```bash
 npm install
-npm run dev        # http://localhost:5173
+npm run dev        # http://localhost:5800
 npm run test       # Unit-Tests für Filter, Sortierung, Sichtbarkeit, Pagination
 npm run build      # TypeScript-Prüfung + Produktions-Build
 ```
