@@ -43,8 +43,11 @@ Workflow for creating, scoring and implementing ideas
 
 
 ## How to work with us
-- Before changing anything, explain your plan in German or English and wait for us to agree.
+- Before changing anything, explain your plan
+- Please always answer in the same language as the prompt (German or English)
+- All artefacts, documents, comments and logs have to be in English
 - Build one small feature at a time, and tell us how to check it works.
 - Ask if something is unclear. Don't guess.
 - Never add features that aren't in our requirements.
 - After each change, update the build log in build/logs/buildLog.md.
+- Please add also the time to the build log
