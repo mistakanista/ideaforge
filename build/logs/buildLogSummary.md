@@ -23,3 +23,15 @@ Builder: Gernot · Checked by: Uli
 - What went wrong, and how we fixed it: nothing
 - What we learned about building with AI: a lot of regarding supabase and how to test it
 - Saved version: a lot of commits the last on update claude.md
+
+## 10.10.2026 · User story 1 : Store idea data in the database
+Builder: Gernot · Checked by: Uli
+
+- What we asked for: user story US-1: Store idea data in the database, with acceptance criteria for idea submission, category selection, and impact assessment
+- What the AI changed: added a new migration for ideas, import script for the ideas, implemented the supabase repo
+- How we checked it:
+  - Frontend: npm run test (unit tests) and npm run dev, data is now loaded from the database
+  - Supabase: we imported the idea data and added a new idea which now shows up in the database
+- What went wrong, and how we fixed it: nothing
+- What we learned about building with AI: it is good to make small steps, then everything seems to work fine, Claude writes a lot of tests out of the box
+- Saved version: US-1 implement supabaseRepo

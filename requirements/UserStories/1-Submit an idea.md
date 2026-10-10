@@ -11,4 +11,4 @@ As an employee of Tallis & Reeve, I want to submit an idea through the idea pipe
 - [ ] Ideas can be marked as confidential, then they are visible only to the submitter and the innovation panel (reviewer)
 
 
-## Status: open
+## Status: review
