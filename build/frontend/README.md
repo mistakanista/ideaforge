@@ -32,6 +32,8 @@ All changes are stored only in the `localStorage` of this browser. "Reset demo d
 
 Test users (imported by `build/supabase/seed.sql` locally and `build/supabase/scripts/import_dummy_users.sql` in the cloud): `firstname.lastname@tallis.uk` with the initial password `tallis123`.
 
+First login: while `app_user.must_change_password` is true, every page leads to `/welcome`, where the user sets a new password (at least 8 characters, not the initial password). The password is saved in Supabase Auth; the database trigger then clears the flag and the user continues to the requested page. Google users never have this flag. To test it again, set the flag in the SQL editor: `update public.app_user set must_change_password = true where email = '…';`
+
 Against the local Supabase (Docker, `npx supabase start` in `build/`): create `.env.localdb` with `VITE_AUTH_SOURCE=supabase`, `VITE_SUPABASE_URL=http://127.0.0.1:54321` and the local publishable key from `npx supabase status`, then run `npm run dev:localdb`.
 
 ## Structure

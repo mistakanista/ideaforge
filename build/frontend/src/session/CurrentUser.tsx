@@ -31,6 +31,10 @@ interface CurrentUserContextValue {
   signOut: () => Promise<void>;
   /** Why the user was signed out again (e.g. deactivated account); shown on the login page. */
   notice: string | null;
+  /** Supabase mode: the user still has to replace the initial password (app_user.must_change_password). */
+  mustChangePassword: boolean;
+  /** Supabase mode: load the own app_user row again, e.g. after the password change. */
+  reloadProfile: () => Promise<void>;
 }
 
 const CurrentUserContext = createContext<CurrentUserContextValue | null>(null);
@@ -77,6 +81,8 @@ function MockUserProvider({ children }: { children: ReactNode }) {
         refreshUsers,
         signOut: async () => {},
         notice: null,
+        mustChangePassword: false,
+        reloadProfile: async () => {},
       }}
     >
       {children}
@@ -90,6 +96,7 @@ function SupabaseUserProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AppUser | null>(null);
   const [users, setUsers] = useState<AppUser[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
+  const [mustChangePassword, setMustChangePassword] = useState(false);
 
   const refreshUsers = useCallback(async () => {
     setUsers(await repository.listUsers());
@@ -104,19 +111,16 @@ function SupabaseUserProvider({ children }: { children: ReactNode }) {
   }, [supabase]);
 
   const authUserId = session?.user.id;
-  useEffect(() => {
-    if (!authUserId) {
-      setUser(null);
-      return;
-    }
-    let cancelled = false;
-    void (async () => {
+
+  /** Loads the own app_user row; signs the user out again if it is missing or deactivated. */
+  const loadProfile = useCallback(
+    async (id: string, isCancelled: () => boolean = () => false) => {
       const { data, error } = await supabase
         .from('app_user')
-        .select('email, display_name, office, role, is_active')
-        .eq('auth_user_id', authUserId)
-        .maybeSingle<SessionProfile>();
-      if (cancelled) return;
+        .select('email, display_name, office, role, is_active, must_change_password')
+        .eq('auth_user_id', id)
+        .maybeSingle<SessionProfile & { must_change_password: boolean }>();
+      if (isCancelled()) return;
       if (error || !data || !data.is_active) {
         setNotice(
           data && !data.is_active
@@ -127,13 +131,29 @@ function SupabaseUserProvider({ children }: { children: ReactNode }) {
         return;
       }
       setNotice(null);
+      setMustChangePassword(data.must_change_password);
       setUser(syncMockUser(data));
       await refreshUsers();
-    })();
+    },
+    [supabase, refreshUsers],
+  );
+
+  useEffect(() => {
+    if (!authUserId) {
+      setUser(null);
+      setMustChangePassword(false);
+      return;
+    }
+    let cancelled = false;
+    void loadProfile(authUserId, () => cancelled);
     return () => {
       cancelled = true;
     };
-  }, [authUserId, supabase, refreshUsers]);
+  }, [authUserId, loadProfile]);
+
+  const reloadProfile = useCallback(async () => {
+    if (authUserId) await loadProfile(authUserId);
+  }, [authUserId, loadProfile]);
 
   const signOut = useCallback(async () => {
     setNotice(null);
@@ -144,7 +164,18 @@ function SupabaseUserProvider({ children }: { children: ReactNode }) {
 
   return (
     <CurrentUserContext.Provider
-      value={{ authMode: 'supabase', status, user, users, actAs: () => {}, refreshUsers, signOut, notice }}
+      value={{
+        authMode: 'supabase',
+        status,
+        user,
+        users,
+        actAs: () => {},
+        refreshUsers,
+        signOut,
+        notice,
+        mustChangePassword,
+        reloadProfile,
+      }}
     >
       {children}
     </CurrentUserContext.Provider>

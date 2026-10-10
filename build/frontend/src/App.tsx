@@ -4,12 +4,13 @@ import { OFFICE_LABELS, ROLE_LABELS } from './config';
 import { repository } from './data';
 import { AdminPage } from './pages/AdminPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { FirstLoginPage } from './pages/FirstLoginPage';
 import { LoginPage } from './pages/LoginPage';
 import { SubmitIdeaPage } from './pages/SubmitIdeaPage';
 import { useCurrentUser } from './session/CurrentUser';
 
 function Header() {
-  const { authMode, status, user, users, actAs, signOut } = useCurrentUser();
+  const { authMode, status, user, users, actAs, signOut, mustChangePassword } = useCurrentUser();
   const signedIn = status === 'signedIn' && user;
   return (
     <header className="site-header">
@@ -24,7 +25,7 @@ function Header() {
           </span>
         </NavLink>
 
-        {signedIn && (
+        {signedIn && !mustChangePassword && (
           <nav className="main-nav" aria-label="Main">
             <NavLink to="/dashboard">Dashboard</NavLink>
             <NavLink to="/submit">Submit an idea</NavLink>
@@ -88,14 +89,17 @@ function Footer() {
   );
 }
 
-/** Every page except /login requires a signed-in user; the requested page is opened after sign-in. */
-function RequireAuth({ children }: { children: ReactNode }) {
-  const { status } = useCurrentUser();
+/**
+ * Every page except /login requires a signed-in user; the requested page is opened after sign-in.
+ * Users who still have an initial password are sent to /welcome first (US-0 step 4).
+ */
+function RequireAuth({ children, passwordStep = false }: { children: ReactNode; passwordStep?: boolean }) {
+  const { status, mustChangePassword } = useCurrentUser();
   const location = useLocation();
+  const from = (location.state as { from?: string } | null)?.from ?? location.pathname + location.search;
   if (status === 'loading') return <p className="muted">Loading…</p>;
-  if (status === 'signedOut') {
-    return <Navigate to="/login" replace state={{ from: location.pathname + location.search }} />;
-  }
+  if (status === 'signedOut') return <Navigate to="/login" replace state={{ from }} />;
+  if (mustChangePassword && !passwordStep) return <Navigate to="/welcome" replace state={{ from }} />;
   return <>{children}</>;
 }
 
@@ -110,6 +114,7 @@ export function App() {
       <main id="main" className="container">
         <Routes>
           <Route path="/login" element={authMode === 'supabase' ? <LoginPage /> : <Navigate to="/dashboard" replace />} />
+          <Route path="/welcome" element={<RequireAuth passwordStep><FirstLoginPage /></RequireAuth>} />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<RequireAuth><DashboardPage /></RequireAuth>} />
           <Route path="/submit" element={<RequireAuth><SubmitIdeaPage /></RequireAuth>} />
