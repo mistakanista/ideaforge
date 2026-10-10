@@ -1,8 +1,9 @@
--- Checks the local demo users created by seed.sql (US-0 step 2): 12 dummy users and the client admin Dev Anand.
+-- Checks the local demo data: the users created by seed.sql (US-0 step 2: 12 dummy users and the
+-- client admin Dev Anand) and the 60 demo ideas from scripts/import_demo_ideas.sql (US-1).
 -- Run after `npx supabase db reset`. Read-only checks, rolled back at the end.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(11);
+select plan(17);
 
 select is((select count(*) from auth.users where email like '%@tallis.uk'), 13::bigint, '13 demo users exist in Supabase Auth');
 select is((select count(*) from public.app_user where email like '%@tallis.uk'), 13::bigint, 'each demo user has an app_user row');
@@ -38,6 +39,26 @@ select results_eq(
 select is(
   (select count(*) from public.app_user where email like '%@tallis.uk' and role = 'STAFF'),
   8::bigint, 'the other 8 users are staff');
+
+-- Demo ideas (same as the mock data in build/frontend/src/data/seed.ts)
+select is((select count(*) from public.idea), 60::bigint, '60 demo ideas exist');
+select results_eq(
+  $$ select min(idea_id), max(idea_id) from public.idea $$,
+  $$ values (1::bigint, 60::bigint) $$, 'the demo ideas keep the mock ids 1 to 60');
+select results_eq(
+  $$ select i.current_stage::text, count(*) from public.idea i group by i.current_stage order by i.current_stage $$,
+  $$ values ('SUBMITTED', 17::bigint), ('UNDER_REVIEW', 17::bigint), ('PILOTING', 13::bigint),
+            ('IMPLEMENTED', 7::bigint), ('DECLINED', 6::bigint) $$,
+  'the stages are the same as in the mock data');
+select is((select count(*) from public.idea where is_confidential), 8::bigint, '8 demo ideas are confidential');
+select is(
+  (select count(*) from public.idea i join public.app_user u on u.user_id = i.submitter_id where i.office <> u.office),
+  0::bigint, 'every idea has the office of its submitter');
+select results_eq(
+  $$ insert into public.idea (title, problem, solution, expected_impact, category_id, submitter_id)
+     values ('New idea', 'p', 's', 'i', 1, (select user_id from public.app_user where email = 'daniel.okafor@tallis.uk'))
+     returning idea_id $$,
+  $$ values (61::bigint) $$, 'a new idea continues with id 61');
 
 select * from finish();
 rollback;

@@ -23,7 +23,7 @@ At the end it prints the local URLs and keys. They’re only for your Mac; they�
 
 2. Rebuild the database with migrations and dummy users
 
-Expected lines: Applying migration …_app_user.sql, Applying migration …_login.sql, Applying migration …_idea.sql, Seeding data from supabase/seed.sql.
+Expected lines: Applying migration …_app_user.sql, Applying migration …_login.sql, Applying migration …_idea.sql, Seeding data from supabase/seed.sql, Seeding data from supabase/scripts/import_demo_ideas.sql.
 
 3. Run the tests, one command per test file
 
@@ -49,6 +49,8 @@ Tip: if supabase start complains that a port is in use, another Supabase or app 
 - `app_user`, `login_allowlist`: users, roles and sign-in rules (US-0).
 - `category`: the four idea categories, created by the migration (also in the cloud). Signed-in users can read them; changes follow with the admin page (US-5).
 - `idea` (US-1): the database sets submitter, office (copied from the submitter), stage `SUBMITTED` and `created_at` for every idea submitted through the API. A user without an office cannot submit. Confidential ideas are visible only to the submitter and the reviewers, not to admins. No updates or deletes through the API yet (stage changes follow with US-3). Tests: `tests/idea_test.sql` (27).
+- Demo ideas: `scripts/import_demo_ideas.sql` holds the same 60 ideas as the frontend mock data (ids 1–60, generated once from `frontend/src/data/seed.ts`). Locally it runs after `seed.sql` on every `db reset` (`sql_paths` in `config.toml`). In the cloud, run it once in the SQL editor after the idea migration and `import_dummy_users.sql`; it imports nothing if ideas already exist and stops if a demo user is missing. Checked by `tests/seed_test.sql`.
+- Users who have ideas cannot be deleted (foreign key); deactivate them instead (`is_active = false`).
 
 ## Test login with curl
 curl -s -X POST "https://owwdzjerddgavqjqxrru.supabase.co/auth/v1/token?grant_type=password" -H "apikey: <publishable key>" -H "Content-Type: application/json" -d '{"email":"daniel.okafor@tallis.uk","password":"tallis123"}'

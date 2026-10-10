@@ -5,6 +5,7 @@ create extension if not exists pgtap with schema extensions;
 select plan(19);
 
 -- Start from an empty user table, independent of seed.sql (rolled back at the end)
+delete from public.idea;  -- ideas reference their submitters (demo ideas from scripts/import_demo_ideas.sql)
 delete from auth.users;
 
 -- ---------------------------------------------------------------------
