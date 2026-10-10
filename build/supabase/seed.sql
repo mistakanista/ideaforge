@@ -2,11 +2,12 @@
 -- IdeaForge: local demo users (US-0). Runs automatically on `npx supabase db reset`.
 -- For the cloud project use scripts/import_dummy_users.sql instead.
 --
--- Creates the 12 dummy users of the prototype (build/frontend/src/data/seed.ts) as
+-- Creates the 12 dummy users of the prototype (build/frontend/src/data/seed.ts) and the
+-- client admin Dev Anand as
 -- Supabase Auth users with email firstName.lastName@tallis.uk and the initial
 -- password tallis123 (stored as bcrypt hash). handle_new_user() creates the app_user
 -- rows; this script then sets office, must_change_password and the roles.
--- Locally Priya Shah is the bootstrap admin and grants the reviewer roles.
+-- Locally Priya Shah is the bootstrap admin; she makes Dev Anand admin and grants the reviewer roles.
 -- =====================================================================
 
 do $$
@@ -21,7 +22,8 @@ begin
       ('Priya Shah',    'BRISTOL'), ('Ruth Evans',   'LEEDS'),   ('Tom Hallworth', 'GLASGOW'),
       ('Aisha Rahman',  'BRISTOL'), ('Daniel Okafor', 'BRISTOL'), ('Sofia Marin',   'LEEDS'),
       ('Lena Fischer',  'GLASGOW'), ('Marcus Reid',  'LEEDS'),   ('Gareth Lowe',   'GLASGOW'),
-      ('Chloe Bennett', 'BRISTOL'), ('Sam Patel',    'LEEDS'),   ('Morgan Hughes', 'GLASGOW')
+      ('Chloe Bennett', 'BRISTOL'), ('Sam Patel',    'LEEDS'),   ('Morgan Hughes', 'GLASGOW'),
+      ('Dev Anand',     'BRISTOL')
     ) as t (full_name, office)
   loop
     v_email := lower(replace(u.full_name, ' ', '.')) || '@tallis.uk';
@@ -54,6 +56,9 @@ begin
     and not exists (select 1 from public.app_user where role = 'ADMIN' and is_active);
 
   select user_id into v_admin from public.app_user where role = 'ADMIN' and is_active order by user_id limit 1;
+
+  update public.app_user set role = 'ADMIN', role_changed_by = v_admin
+  where email = 'dev.anand@tallis.uk' and role = 'STAFF';
 
   update public.app_user set role = 'REVIEWER', role_changed_by = v_admin
   where email in ('ruth.evans@tallis.uk', 'tom.hallworth@tallis.uk', 'aisha.rahman@tallis.uk')

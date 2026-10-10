@@ -3,15 +3,16 @@
 -- Run once in the Supabase dashboard: SQL Editor -> paste this file -> Run.
 -- Safe to run again: users whose email already exists are skipped.
 --
--- Same users as seed.sql (local), with two differences:
+-- Same users as seed.sql (local): the 12 dummy users and the client admin Dev Anand, with two differences:
 --   * Priya Shah stays STAFF, because the initial password tallis123 is public.
 --     After her password has been changed, an existing admin promotes her:
 --       update public.app_user
 --          set role = 'ADMIN',
 --              role_changed_by = (select user_id from public.app_user where email = '<admin email>')
 --        where email = 'priya.shah@tallis.uk';
---   * The reviewer roles are granted by the existing admin of the project
---     (the script stops if there is no active admin yet).
+--   * Dev Anand (client admin) and the reviewer roles are granted by the existing admin
+--     of the project (the script stops if there is no active admin yet).
+--     Sign in as dev.anand@tallis.uk right after the import to replace the public initial password.
 -- All users must change the password tallis123 at their first login (must_change_password).
 -- =====================================================================
 
@@ -33,7 +34,8 @@ begin
       ('Priya Shah',    'BRISTOL'), ('Ruth Evans',   'LEEDS'),   ('Tom Hallworth', 'GLASGOW'),
       ('Aisha Rahman',  'BRISTOL'), ('Daniel Okafor', 'BRISTOL'), ('Sofia Marin',   'LEEDS'),
       ('Lena Fischer',  'GLASGOW'), ('Marcus Reid',  'LEEDS'),   ('Gareth Lowe',   'GLASGOW'),
-      ('Chloe Bennett', 'BRISTOL'), ('Sam Patel',    'LEEDS'),   ('Morgan Hughes', 'GLASGOW')
+      ('Chloe Bennett', 'BRISTOL'), ('Sam Patel',    'LEEDS'),   ('Morgan Hughes', 'GLASGOW'),
+      ('Dev Anand',     'BRISTOL')
     ) as t (full_name, office)
   loop
     v_email := lower(replace(u.full_name, ' ', '.')) || '@tallis.uk';
@@ -61,9 +63,12 @@ begin
     v_count := v_count + 1;
   end loop;
 
+  update public.app_user set role = 'ADMIN', role_changed_by = v_admin
+  where email = 'dev.anand@tallis.uk' and role = 'STAFF';
+
   update public.app_user set role = 'REVIEWER', role_changed_by = v_admin
   where email in ('ruth.evans@tallis.uk', 'tom.hallworth@tallis.uk', 'aisha.rahman@tallis.uk')
     and role = 'STAFF';
 
-  raise notice 'Imported % new users; reviewer roles granted by app_user %.', v_count, v_admin;
+  raise notice 'Imported % new users; admin and reviewer roles granted by app_user %.', v_count, v_admin;
 end $$;
