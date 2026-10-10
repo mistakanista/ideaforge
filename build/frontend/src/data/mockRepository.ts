@@ -1,6 +1,7 @@
 // Prototype data source: keeps the demo database in localStorage (falls back to memory)
 // and enforces the same rules the database triggers will enforce later.
 import { canSeeIdea } from '../lib/ideaQuery';
+import { upsertUserByEmail, type SessionProfile } from '../lib/sessionUser';
 import type { AppUser, Category, Idea, IdeaDetails, IdeaListItem, ReviewerScorecard } from '../types';
 import { RuleViolation, type IdeaRepository } from './repository';
 import { createSeed, type Database } from './seed';
@@ -32,6 +33,14 @@ function save(db: Database): void {
   } catch {
     // Storage not available: keep the data in memory for this session.
   }
+}
+
+/** VITE_AUTH_SOURCE=supabase: store the signed-in user in the mock data (see lib/sessionUser.ts). */
+export function syncMockUser(profile: SessionProfile): AppUser {
+  const db = load();
+  const result = upsertUserByEmail(db.users, profile);
+  save({ ...db, users: result.users });
+  return result.user;
 }
 
 function nextId<T>(rows: T[], getId: (row: T) => number): number {

@@ -21,7 +21,8 @@ function MessageLine({ message }: { message: Message }) {
 }
 
 function UsersSection() {
-  const { user: me, users, actAs, refreshUsers } = useCurrentUser();
+  const { authMode, user: me, users, actAs, refreshUsers } = useCurrentUser();
+  const canActAs = authMode === 'mock';
   const [message, setMessage] = useState<Message>(null);
   const activeAdmins = users.filter((u) => u.role === 'ADMIN' && u.is_active).length;
 
@@ -40,7 +41,12 @@ function UsersSection() {
   return (
     <section className="card admin-section" aria-labelledby="users-heading">
       <h2 id="users-heading">Users</h2>
-      <p className="muted">Change roles, for example to make someone a reviewer. Use “Act as” to test the app as that user.</p>
+      <p className="muted">
+        Change roles, for example to make someone a reviewer.
+        {canActAs
+          ? ' Use “Act as” to test the app as that user.'
+          : ' Note: until the ideas are stored in Supabase, role changes here only affect the demo data. Real roles are changed in Supabase.'}
+      </p>
       <MessageLine message={message} />
       <div className="table-wrap">
         <table className="admin-table">
@@ -50,7 +56,7 @@ function UsersSection() {
               <th scope="col">Email</th>
               <th scope="col">Office</th>
               <th scope="col">Role</th>
-              <th scope="col">Test</th>
+              {canActAs && <th scope="col">Test</th>}
             </tr>
           </thead>
           <tbody>
@@ -82,16 +88,18 @@ function UsersSection() {
                       ))}
                     </select>
                   </td>
-                  <td>
-                    <button
-                      type="button"
-                      className="btn btn-secondary btn-small"
-                      disabled={u.user_id === me?.user_id}
-                      onClick={() => actAs(u.user_id)}
-                    >
-                      Act as
-                    </button>
-                  </td>
+                  {canActAs && (
+                    <td>
+                      <button
+                        type="button"
+                        className="btn btn-secondary btn-small"
+                        disabled={u.user_id === me?.user_id}
+                        onClick={() => actAs(u.user_id)}
+                      >
+                        Act as
+                      </button>
+                    </td>
+                  )}
                 </tr>
               );
             })}

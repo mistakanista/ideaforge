@@ -25,6 +25,15 @@ npm run build      # TypeScript check + production build
 
 All changes are stored only in the `localStorage` of this browser. "Reset demo data" in the footer restores the demo data.
 
+## Login (US-0)
+`VITE_AUTH_SOURCE` in `.env` selects the login:
+- `mock` (default): no login, the "Acting as" switcher above is used.
+- `supabase`: real login on `/login` with Google or email and password (Supabase Auth). Every page needs a login; after sign-in the requested page opens; "Sign out" is in the header. The own `app_user` row is loaded from Supabase; deactivated users are signed out again. Until the ideas are stored in Supabase, the signed-in user is matched to the demo data by email (`src/lib/sessionUser.ts`), with name, role and office taken from Supabase.
+
+Test users (imported by `build/supabase/seed.sql` locally and `build/supabase/scripts/import_dummy_users.sql` in the cloud): `firstname.lastname@tallis.uk` with the initial password `tallis123`.
+
+Against the local Supabase (Docker, `npx supabase start` in `build/`): create `.env.localdb` with `VITE_AUTH_SOURCE=supabase`, `VITE_SUPABASE_URL=http://127.0.0.1:54321` and the local publishable key from `npx supabase status`, then run `npm run dev:localdb`.
+
 ## Structure
 
 ```
@@ -49,7 +58,7 @@ The pages access data only through `repository` from `src/data/index.ts`.
    - confidential ideas only for the submitter and reviewers;
    - admin functions only for admins;
    - votes only for oneself.
-3. Write `src/data/supabaseRepository.ts`, which implements `IdeaRepository`. Use `createSupabaseClient()` for this and register the new repository in `src/data/index.ts`.
+3. Write `src/data/supabaseRepository.ts`, which implements `IdeaRepository`. Use `getSupabaseClient()` for this and register the new repository in `src/data/index.ts`.
 4. Create `.env` from `.env.example` and set `VITE_DATA_SOURCE=supabase` as well as the URL and anon key.
 5. Replace the simulated login (`session/CurrentUser.tsx`) with Google login via Supabase Auth (US-9).
 
