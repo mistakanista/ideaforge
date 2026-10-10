@@ -130,7 +130,7 @@ export function createSeed(): Database {
 
   const users: AppUser[] = USERS.map(([name, office, role], i) => ({
     user_id: i + 1,
-    email: `${name.toLowerCase().replace(/\s+/g, '.')}@tallisreeve.example`,
+    email: `${name.toLowerCase().replace(/\s+/g, '.')}@tallis.uk`,
     display_name: name,
     office,
     role,

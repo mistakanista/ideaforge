@@ -4,6 +4,9 @@ begin;
 create extension if not exists pgtap with schema extensions;
 select plan(24);
 
+-- Start from an empty user table, independent of seed.sql (rolled back at the end)
+delete from auth.users;
+
 -- The test users use @example.com, which has to be on the sign-in allowlist (see 20261010083657_login.sql)
 insert into public.login_allowlist (entry, note) values ('@example.com', 'test data');
 
