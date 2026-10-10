@@ -47,3 +47,11 @@ Tip: if supabase start complains that a port is in use, another Supabase or app 
 
 ## Test login with curl
 curl -s -X POST "https://owwdzjerddgavqjqxrru.supabase.co/auth/v1/token?grant_type=password" -H "apikey: <publishable key>" -H "Content-Type: application/json" -d '{"email":"daniel.okafor@tallis.uk","password":"tallis123"}'
+## Known limitations
+Decided on 2026-10-10: the Supabase Auth settings are left at their defaults (step 5 of US-0 was skipped), because the project is fictive.
+
+1. **"Confirm email" is off.** The app has no sign-up form, but the Supabase sign-up API is reachable with the public publishable key. Someone could register a made-up `@tallis.uk` address with any password, and the allowlist only checks the domain. That person would get a working STAFF account.
+   - Fix if needed: switch on *Authentication → Sign In / Providers → Email → Confirm email*. Nobody can receive mails at the fictive domain, so such accounts would stay unusable.
+   - Imported users (already confirmed) and Google users are not affected by the switch.
+2. **Minimum password length is 6 in Supabase.** The first-login page (`/welcome`) requires 8 characters, but only in the browser; via the API a user could set a 6-character password for their own account.
+   - Fix if needed: set *Minimum password length* to 8 in the dashboard and `minimum_password_length = 8` in `config.toml`.

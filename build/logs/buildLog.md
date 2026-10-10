@@ -29,3 +29,6 @@
 
 ## 2026-10-10 12:32
 - Added the client admin Dev Anand (`dev.anand@tallis.uk`, office Bristol, initial password `tallis123`, must change password) to `build/supabase/seed.sql` (local: made admin by Priya) and `build/supabase/scripts/import_dummy_users.sql` (cloud: made admin by the existing admin; re-running the script only adds Dev). `seed_test.sql` updated to 13 users / 2 local admins (11 tests). All 54 database tests pass; cloud script dry-run on a simulated cloud state: 1 user imported, Dev is ADMIN, second run imports 0. Frontend demo data unchanged (Dev is added automatically on his first real login).
+
+## 2026-10-10 12:45
+- US-0 step 5 (Supabase Auth settings) skipped by decision: "Confirm email" stays off and the minimum password length stays at 6. Documented as known limitations with risk and fix in `build/supabase/README.md`. No code or configuration changed.
