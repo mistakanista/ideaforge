@@ -32,3 +32,6 @@
 
 ## 2026-10-10 12:45
 - US-0 step 5 (Supabase Auth settings) skipped by decision: "Confirm email" stays off and the minimum password length stays at 6. Documented as known limitations with risk and fix in `build/supabase/README.md`. No code or configuration changed.
+
+## 2026-10-10 13:13
+- Added the section "Project state and how to work" to `CLAUDE.md` (folders, database rules, login modes, test commands incl. the docker exec workaround, status of US-0 and open points) as a handover for the next session. No code changed.
