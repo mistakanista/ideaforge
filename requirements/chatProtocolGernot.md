@@ -142,3 +142,9 @@ Shall confidential ideas stay confidential even after the implementation and sha
 
 ## Answer 21
 Yes, confidential ideas should stay confidential throughout their entire lifespan, even after they reach the implemented stage—they must remain visible only to the submitter and the innovation panel. As for allowing users to edit their ideas or change the confidentiality status, I haven't really thought about that. What would you suggest? I'm happy for your team to decide how editing should work, as long as it's clear and works for our colleagues—just make a note of what you decide!
+
+## Prompt 22
+Shall the idea pipeline really be open for everyone which means for all users with a Google account or only for Tallis & Reeve users which have a Google account. How can we distinguish Tallis & Reeve google users from others?
+
+## Answer 22
+The idea pipeline should definitely only be accessible to Tallis & Reeve staff. As long as access is restricted so that only people logging in with a valid Tallis & Reeve work Google account can get in, I'm happy for your team to decide the technical details of how that domain verification is handled.

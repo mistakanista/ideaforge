@@ -4,6 +4,9 @@ begin;
 create extension if not exists pgtap with schema extensions;
 select plan(24);
 
+-- The test users use @example.com, which has to be on the sign-in allowlist (see 20261010083657_login.sql)
+insert into public.login_allowlist (entry, note) values ('@example.com', 'test data');
+
 -- Four Google logins: Priya (becomes admin), Ruth (becomes reviewer), Daniel (staff), one without a name
 insert into auth.users (id, email, raw_user_meta_data) values
   ('11111111-1111-1111-1111-111111111111', 'priya.shah@example.com', '{"full_name": "Priya Shah"}'),

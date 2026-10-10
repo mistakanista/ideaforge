@@ -14,3 +14,6 @@
 
 ## 2026-10-09 23:52
 - Translated `build/frontend/README.md` to English (content unchanged) and updated the README heading reference in `build/frontend/src/types.ts`. No functional code changed.
+
+## 2026-10-10 10:38
+- US-0 Login, step 1 (database): migration `build/supabase/migrations/20261010083657_login.sql` adds `app_user.must_change_password` (cleared automatically by trigger `on_auth_password_changed` when the password really changes in Supabase Auth; only admins can change it through the API) and the table `login_allowlist` (seeded with `@tallis.uk`; `handle_new_user()` now rejects sign-ups from other emails; single addresses such as developer Gmail accounts can be added in the SQL editor). No password column: passwords stay in Supabase Auth (bcrypt). New tests `build/supabase/tests/login_test.sql` (19, all pass); `app_user_test.sql` adds `@example.com` to the allowlist in its setup (24, all pass). Not yet pushed.

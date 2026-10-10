@@ -4,5 +4,6 @@ As an admin or employee of Tallis & Reeve, I want to use the app free of charge 
 
 ## Acceptance criteria
 - [ ] Deploy the app on a public, free domain
+- [ ] the access is restricted to the Tallis & Reeve staff
 
 ## Status: open
