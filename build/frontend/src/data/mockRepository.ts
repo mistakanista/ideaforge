@@ -121,7 +121,6 @@ export const mockRepository: IdeaRepository = {
       current_stage: 'SUBMITTED',
       is_confidential: input.is_confidential,
       resubmission_of: null,
-      attempt_no: 1,
       created_at: now,
     };
     db.ideas.push(idea);

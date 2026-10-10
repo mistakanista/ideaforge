@@ -180,7 +180,6 @@ export function createSeed(): Database {
       current_stage: finalStage,
       is_confidential: i % 8 === 3,
       resubmission_of: null,
-      attempt_no: 1,
       created_at: created.toISOString(),
     };
     ideas.push(idea);

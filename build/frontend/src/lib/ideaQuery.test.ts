@@ -14,7 +14,6 @@ function idea(id: number, overrides: Partial<IdeaListItem> = {}): IdeaListItem {
     current_stage: 'SUBMITTED' as IdeaStage,
     is_confidential: false,
     resubmission_of: null,
-    attempt_no: 1,
     created_at: `2026-09-${String(id).padStart(2, '0')}T10:00:00.000Z`,
     category_name: 'Client delivery',
     submitter_name: 'Someone',

@@ -35,10 +35,9 @@ export interface Idea {
   category_id: number;
   submitter_id: number;
   current_stage: IdeaStage;
-  /** Not yet part of data model V2, see README "Open points". */
+  /** Added to data model V2 in migration 20261010192020_idea.sql (visible only to the submitter and reviewers). */
   is_confidential: boolean;
   resubmission_of: number | null;
-  attempt_no: 1 | 2;
   created_at: string;
 }
 

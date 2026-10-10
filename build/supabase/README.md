@@ -23,7 +23,7 @@ At the end it prints the local URLs and keys. They’re only for your Mac; they�
 
 2. Rebuild the database with migrations and dummy users
 
-Expected lines: Applying migration …_app_user.sql, Applying migration …_login.sql, Seeding data from supabase/seed.sql.
+Expected lines: Applying migration …_app_user.sql, Applying migration …_login.sql, Applying migration …_idea.sql, Seeding data from supabase/seed.sql.
 
 3. Run the tests, one command per test file
 
@@ -34,7 +34,7 @@ each check prints ok 1 - …, ok 2 - … and so on;
 a broken rule shows not ok 5 - … followed by # Failed test …, which says what was expected and what was found;
 at the end, # Looks like you failed … appears only if something went wrong.
 4. Optional: look at the data
-   npx supabase start without the -x option also starts Studio, the local version of the dashboard, at http://127.0.0.1:54323. There you see auth.users, app_user and login_allowlist like in the cloud.
+   npx supabase start without the -x option also starts Studio, the local version of the dashboard, at http://127.0.0.1:54323. There you see auth.users, app_user, login_allowlist, category and idea like in the cloud.
 
 5. Stop Supabase
 
@@ -45,8 +45,14 @@ This runs the 15 unit tests for filters, sorting, visibility and pagination. Exp
 
 Tip: if supabase start complains that a port is in use, another Supabase or app is using it. npx supabase stop fixes the first case; otherwise close the other app.
 
+## Tables (public schema)
+- `app_user`, `login_allowlist`: users, roles and sign-in rules (US-0).
+- `category`: the four idea categories, created by the migration (also in the cloud). Signed-in users can read them; changes follow with the admin page (US-5).
+- `idea` (US-1): the database sets submitter, office (copied from the submitter), stage `SUBMITTED` and `created_at` for every idea submitted through the API. A user without an office cannot submit. Confidential ideas are visible only to the submitter and the reviewers, not to admins. No updates or deletes through the API yet (stage changes follow with US-3). Tests: `tests/idea_test.sql` (27).
+
 ## Test login with curl
 curl -s -X POST "https://owwdzjerddgavqjqxrru.supabase.co/auth/v1/token?grant_type=password" -H "apikey: <publishable key>" -H "Content-Type: application/json" -d '{"email":"daniel.okafor@tallis.uk","password":"tallis123"}'
+
 ## Known limitations
 Decided on 2026-10-10: the Supabase Auth settings are left at their defaults (step 5 of US-0 was skipped), because the project is fictive.
 

@@ -3,6 +3,8 @@
 Relationales Modell für PostgreSQL mit integrierter Benutzer- und Rollenverwaltung.
 Version 2 kommt ohne Stammdaten-Tabellen für Rolle, Stufe und Office aus.
 
+> **Note (2026-10-10, implementation of US-1):** the `idea` table in `build/supabase/migrations/20261010192020_idea.sql` extends this model with `office` (copy of the submitter's office at submit time) and `is_confidential` (visible only to the submitter and the reviewers). `search_vector` is not created yet; it follows with the dashboard search (US-2). `attempt_no` is dropped (decided 2026-10-10): it can be derived from `resubmission_of` (NULL = first attempt, set = second attempt). A trigger rejects resubmitting a second attempt, so `UNIQUE(resubmission_of)` plus this check still prevent a third round; `idea.max_attempts` in `ideaforge.properties` is only a UI text.
+
 | Datei | Inhalt |
 |---|---|
 | `ideaforge_schema.sql` | DDL (11 Tabellen, 4 ENUM-Typen, 4 Sichten) |
