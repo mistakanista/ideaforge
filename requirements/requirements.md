@@ -4,6 +4,7 @@ We will try to follow the github and supabase path, as a fallback we will go for
 
 ## Feature List
 ### must-haves
+- US-0 Technical breakthrough: login and authorization with Google or email/password, first login password change, import dummy users
 - US-1 Submit an idea: title, the problem it solves, the proposed solution, category and expected impact
 - US-1 There are 4 categories: client delivery, internal tools and processes, sustainability, and people and culture
 - US-1 Reviewers and admin can also send ideas but they must not score their own ideas
@@ -28,6 +29,7 @@ We will try to follow the github and supabase path, as a fallback we will go for
 - A leaderboard of the most-backed ideas this quarter
 - A ready for the panel list for the first Tuesday of each month, where the ideas will be discussed
 - Users can edit their ideas
+- Users can change their office
 
 ### must not have
 - the app must not cost anything

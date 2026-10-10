@@ -148,3 +148,9 @@ Shall the idea pipeline really be open for everyone which means for all users wi
 
 ## Answer 22
 The idea pipeline should definitely only be accessible to Tallis & Reeve staff. As long as access is restricted so that only people logging in with a valid Tallis & Reeve work Google account can get in, I'm happy for your team to decide the technical details of how that domain verification is handled.
+
+## Prompt 23
+shall their be a possibility for the users to switch the office?
+
+## Answer 23
+Honestly, I haven't thought about domain verification in detail. What would you suggest? I'm happy for your team to decide on the technical solution, as long as it ensures only our colleagues at Tallis & Reeve can log in. Just make a note of what you decide!
