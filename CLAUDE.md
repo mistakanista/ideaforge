@@ -64,6 +64,7 @@ Workflow for creating, scoring and implementing ideas
   - `README.md`: setup, tests and known limitations.
 - `design/prototyp`: frozen click prototype. Do not change it.
 - `build/logs/buildLog.md`: build log (date and time for each entry).
+- `desing/Implemented-Datamode/datamodel.md`: update the simple mermaid diagram of the data model after each supabase migration.
 
 ### Database (Supabase, project ref owwdzjerddgavqjqxrru)
 - `app_user` is linked to `auth.users`. A new auth user gets an `app_user` row with role STAFF via `handle_new_user()`.
@@ -93,7 +94,7 @@ Workflow for creating, scoring and implementing ideas
 - Database, in `build/` with Docker Desktop running:
   1. `npx supabase start`
   2. `npx supabase db reset` (migrations and seed)
-  3. run each test file: `docker exec -i supabase_db_build psql -U postgres -d postgres -q -t < supabase/tests/<file>.sql` (every line must say `ok`)
+  3. run each test file: `docker exec -i supabase_db_build psql -U postgres -d postgres -q -t < supabase/tests/<file>.sql` (every line must say `ok`; run `seed_test.sql` first, see `build/supabase/README.md`)
   4. `npx supabase stop`
 
   `npx supabase test db` does not work here, because Docker cannot read files from the Documents folder.
