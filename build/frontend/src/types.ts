@@ -1,4 +1,4 @@
-// Types mirror the tables of design/DatenModel/V2-StammdatenIntegriert (snake_case like the database),
+// Types mirror the tables of design/DataModel/V2-StammdatenIntegriert (snake_case like the database),
 // so the mock data layer can later be replaced by Supabase without touching the pages.
 
 export type UserRole = 'STAFF' | 'REVIEWER' | 'ADMIN';

@@ -64,7 +64,7 @@ Workflow for creating, scoring and implementing ideas
   - `README.md`: setup, tests and known limitations.
 - `design/prototyp`: frozen click prototype. Do not change it.
 - `build/logs/buildLog.md`: build log (date and time for each entry).
-- `desing/Implemented-Datamode/datamodel.md`: update the simple mermaid diagram of the data model after each supabase migration.
+- `design/DataModel/Implemented-Datamodel/dataModel.md`: update the simple mermaid diagram of the data model after each supabase migration.
 
 ### Database (Supabase, project ref owwdzjerddgavqjqxrru)
 - `app_user` is linked to `auth.users`. A new auth user gets an `app_user` row with role STAFF via `handle_new_user()`.
