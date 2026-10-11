@@ -5,6 +5,6 @@ As an employee of Tallis & Reeve, I want to vote for ideas, so that they are pro
 ## Acceptance criteria
 - [ ] only one vote per person per idea
 - [ ] a user must not vote his own ideas
-- [ ] no votes are displayed for confidential ideas
+- [ ] no votes are allowed and displayed for confidential ideas
 
 ## Status: open

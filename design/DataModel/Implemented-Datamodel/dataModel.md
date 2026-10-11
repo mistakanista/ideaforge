@@ -3,7 +3,7 @@
 Simple overview of the tables that exist in Supabase today (schema `public`, plus the link to `auth.users`).
 Update this diagram after each Supabase migration.
 
-- Last update: 2026-10-11, after migration `20261011135710_vote.sql`
+- Last update: 2026-10-11, after migration `20261011141245_vote_no_confidential.sql`
 - Source: `build/supabase/migrations/`
 - Planned full model: `design/DataModel/V2-StammdatenIntegriert/`
 
@@ -17,7 +17,7 @@ erDiagram
     IDEA ||--o{ IDEA_TRANSITION : "moved by"
     APP_USER ||--o{ IDEA_TRANSITION : "reviews (reviewer)"
     IDEA ||--o{ VOTE : "gets"
-    APP_USER ||--o{ VOTE : "votes (never own idea)"
+    APP_USER ||--o{ VOTE : "votes (never own or confidential idea)"
 
     AUTH_USERS {
         uuid id PK "Supabase Auth, holds the password"

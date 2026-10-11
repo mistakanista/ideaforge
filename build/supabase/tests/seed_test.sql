@@ -1,10 +1,10 @@
 -- Checks the local demo data: the users created by seed.sql (US-0 step 2: 12 dummy users and the
 -- client admin Dev Anand) the 60 demo ideas from scripts/import_demo_ideas.sql (US-1) and their review history
--- from scripts/import_demo_transitions.sql (US-3).
+-- from scripts/import_demo_transitions.sql (US-3) and their votes from scripts/import_demo_votes.sql (US-4).
 -- Run after `npx supabase db reset`. Read-only checks, rolled back at the end.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(22);
+select plan(27);
 
 select is((select count(*) from auth.users where email like '%@tallis.uk'), 13::bigint, '13 demo users exist in Supabase Auth');
 select is((select count(*) from public.app_user where email like '%@tallis.uk'), 13::bigint, 'each demo user has an app_user row');
@@ -73,6 +73,18 @@ select is(
 select is(
   (select count(*) from public.idea_transition t join public.idea i using (idea_id) where t.created_at <= i.created_at),
   0::bigint, 'every transition happened after the idea was submitted');
+-- Votes (US-4)
+select is((select count(*) from public.vote), 239::bigint, '239 demo votes exist');
+select is((select count(distinct idea_id) from public.vote), 50::bigint, 'the demo votes are on 50 ideas');
+select is(
+  (select count(*) from public.vote v join public.idea i using (idea_id) where v.user_id = i.submitter_id),
+  0::bigint, 'nobody voted for their own idea');
+select is(
+  (select count(*) from public.vote v join public.idea i using (idea_id) where i.is_confidential),
+  0::bigint, 'no confidential idea has votes');
+select results_eq(
+  $$ select count(*) from public.vote where idea_id = 1 $$,
+  $$ values (9::bigint) $$, 'idea 1 has the 10 votes of the mock data minus the own vote of its submitter');
 select results_eq(
   $$ insert into public.idea (title, problem, solution, expected_impact, category_id, submitter_id)
      values ('New idea', 'p', 's', 'i', 1, (select user_id from public.app_user where email = 'daniel.okafor@tallis.uk'))

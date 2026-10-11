@@ -5,6 +5,7 @@ create extension if not exists pgtap with schema extensions;
 select plan(39);
 
 -- Start from empty tables, independent of seed.sql (rolled back at the end)
+delete from public.vote;
 delete from public.idea_transition;
 delete from public.idea;
 delete from auth.users;
