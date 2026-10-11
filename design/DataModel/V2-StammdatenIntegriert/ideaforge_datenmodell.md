@@ -5,6 +5,8 @@ Version 2 kommt ohne Stammdaten-Tabellen für Rolle, Stufe und Office aus.
 
 > **Note (2026-10-10, implementation of US-1):** the `idea` table in `build/supabase/migrations/20261010192020_idea.sql` extends this model with `office` (copy of the submitter's office at submit time) and `is_confidential` (visible only to the submitter and the reviewers). `search_vector` is not created yet; it follows with the dashboard search (US-2). `attempt_no` is dropped (decided 2026-10-10): it can be derived from `resubmission_of` (NULL = first attempt, set = second attempt). A trigger rejects resubmitting a second attempt, so `UNIQUE(resubmission_of)` plus this check still prevent a third round; `idea.max_attempts` in `ideaforge.properties` is only a UI text.
 
+> **Note (2026-10-11, implementation of US-3):** `IdeaStageHistory`, `ScoringCriterion` and `IdeaScore` are merged into one table `idea_transition` (`build/supabase/migrations/20261011104615_idea_transition.sql`): every move is made by exactly one reviewer, who either gives the three fixed scores `score_impact`, `score_cost`, `score_feasibility` (1–5, NULL when declined) or declines with a mandatory `reason`. No criterion weights. As planned here, a stage change is only an `INSERT`; the trigger checks `is_valid_transition()`, the reviewer role and the own-idea rule and sets `idea.current_stage`. Notifications follow with US-8.
+
 | Datei | Inhalt |
 |---|---|
 | `ideaforge_schema.sql` | DDL (11 Tabellen, 4 ENUM-Typen, 4 Sichten) |
