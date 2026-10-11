@@ -3,7 +3,7 @@
 Simple overview of the tables that exist in Supabase today (schema `public`, plus the link to `auth.users`).
 Update this diagram after each Supabase migration.
 
-- Last update: 2026-10-11, after migration `20261011113410_idea_transition_decline_scores.sql`
+- Last update: 2026-10-11, after migration `20261011135710_vote.sql`
 - Source: `build/supabase/migrations/`
 - Planned full model: `design/DataModel/V2-StammdatenIntegriert/`
 
@@ -16,6 +16,8 @@ erDiagram
     IDEA |o--o| IDEA : "resubmission of"
     IDEA ||--o{ IDEA_TRANSITION : "moved by"
     APP_USER ||--o{ IDEA_TRANSITION : "reviews (reviewer)"
+    IDEA ||--o{ VOTE : "gets"
+    APP_USER ||--o{ VOTE : "votes (never own idea)"
 
     AUTH_USERS {
         uuid id PK "Supabase Auth, holds the password"
@@ -71,6 +73,11 @@ erDiagram
         smallint score_impact "1-5, optional when declined"
         smallint score_cost "1-5, optional when declined"
         smallint score_feasibility "1-5, optional when declined"
+        timestamptz created_at
+    }
+    VOTE {
+        bigint idea_id PK,FK
+        bigint user_id PK,FK "voter, set by trigger"
         timestamptz created_at
     }
 ```
