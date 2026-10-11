@@ -1,6 +1,7 @@
 // Pure helpers for supabaseRepository: database rows -> app types, database errors -> messages.
 // Kept free of the Supabase client so they can be unit tested.
-import type { Idea, IdeaListItem, IdeaStage, OfficeCode } from '../types';
+import { SCORING_CRITERIA } from '../config';
+import type { Idea, IdeaListItem, IdeaStage, OfficeCode, ReviewerScorecard, StageHistoryEntry } from '../types';
 import { RuleViolation } from './repository';
 
 /** Columns of public.idea read by the app (see supabase/migrations/20261010192020_idea.sql). */
@@ -59,6 +60,81 @@ export function toListItem(row: IdeaRow, votes: VoteInfo = NO_VOTES, ownUserId: 
     ...votes,
     submitted_by_me: ownUserId !== null && row.submitter_id === ownUserId,
   };
+}
+
+/** Columns of public.idea_transition read by the app, with the reviewer name (see 20261011104615_idea_transition.sql). */
+export const TRANSITION_COLUMNS =
+  'transition_id, from_stage, to_stage, changed_by, reason, score_impact, score_cost, score_feasibility, created_at, ' +
+  'reviewer:app_user!idea_transition_changed_by_fkey(display_name)';
+
+/** A stage change of one idea; scores are NULL only for declines without scores. */
+export interface TransitionRow {
+  transition_id: number;
+  from_stage: IdeaStage;
+  to_stage: IdeaStage;
+  changed_by: number;
+  reason: string | null;
+  score_impact: number | null;
+  score_cost: number | null;
+  score_feasibility: number | null;
+  created_at: string;
+  reviewer?: { display_name: string } | null;
+}
+
+const CRITERION_ID = Object.fromEntries(SCORING_CRITERIA.map((c) => [c.code, c.criterion_id])) as Record<
+  (typeof SCORING_CRITERIA)[number]['code'],
+  number
+>;
+
+/**
+ * Review scores and stage history of an idea from its idea_transition rows.
+ * Scorecards: one per scored move, oldest first. History: newest first, ending with the submission
+ * (which is not a transition, so it is built from the idea itself).
+ */
+export function toReviewDetails(
+  idea: IdeaListItem,
+  rows: TransitionRow[],
+): { scorecards: ReviewerScorecard[]; history: StageHistoryEntry[] } {
+  const byTime = [...rows].sort((a, b) => a.created_at.localeCompare(b.created_at) || a.transition_id - b.transition_id);
+  const reviewerName = (row: TransitionRow) => row.reviewer?.display_name ?? 'Unknown';
+
+  const scorecards = byTime
+    .filter((row) => row.score_impact !== null && row.score_cost !== null && row.score_feasibility !== null)
+    .map((row) => ({
+      key: String(row.transition_id),
+      reviewer_id: row.changed_by,
+      reviewer_name: reviewerName(row),
+      scores: {
+        [CRITERION_ID.IMPACT]: row.score_impact as number,
+        [CRITERION_ID.COST]: row.score_cost as number,
+        [CRITERION_ID.FEASIBILITY]: row.score_feasibility as number,
+      },
+      to_stage: row.to_stage,
+      reviewed_at: row.created_at,
+    }));
+
+  const submitted: StageHistoryEntry = {
+    history_id: 0,
+    idea_id: idea.idea_id,
+    from_stage: null,
+    to_stage: 'SUBMITTED',
+    changed_by: idea.submitter_id,
+    changed_by_name: idea.submitter_name,
+    reason: 'Idea submitted.',
+    changed_at: idea.created_at,
+  };
+  const moves = byTime.map((row) => ({
+    history_id: row.transition_id,
+    idea_id: idea.idea_id,
+    from_stage: row.from_stage,
+    to_stage: row.to_stage,
+    changed_by: row.changed_by,
+    changed_by_name: reviewerName(row),
+    reason: row.reason ?? '',
+    changed_at: row.created_at,
+  }));
+
+  return { scorecards, history: [submitted, ...moves].reverse() };
 }
 
 /** The parts of a PostgrestError the app looks at. */

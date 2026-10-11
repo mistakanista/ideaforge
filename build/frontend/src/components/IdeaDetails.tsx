@@ -55,7 +55,7 @@ export function IdeaDetails({ ideaId }: { ideaId: number }) {
         ) : (
           <div className="table-wrap">
             <table className="score-table">
-              <caption className="visually-hidden">Scores from 1 to {MAX_SCORE} per reviewer</caption>
+              <caption className="visually-hidden">Scores from 1 to {MAX_SCORE} per review</caption>
               <thead>
                 <tr>
                   <th scope="col">Reviewer</th>
@@ -69,8 +69,16 @@ export function IdeaDetails({ ideaId }: { ideaId: number }) {
               </thead>
               <tbody>
                 {scorecards.map((card) => (
-                  <tr key={card.reviewer_id}>
-                    <th scope="row">{card.reviewer_name}</th>
+                  <tr key={card.key}>
+                    <th scope="row">
+                      {card.reviewer_name}
+                      {card.to_stage && card.reviewed_at && (
+                        <span className="th-hint">
+                          {card.to_stage === 'DECLINED' ? 'Declined' : `Moved to ${STAGE_BY_CODE[card.to_stage].label}`} ·{' '}
+                          {formatDate(card.reviewed_at)}
+                        </span>
+                      )}
+                    </th>
                     {SCORING_CRITERIA.map((c) => (
                       <td key={c.criterion_id}>{card.scores[c.criterion_id] ?? '–'}</td>
                     ))}
@@ -103,9 +111,13 @@ export function IdeaDetails({ ideaId }: { ideaId: number }) {
               <span className="badge-dot" style={{ background: STAGE_BY_CODE[entry.to_stage].color }} aria-hidden="true" />
               <div>
                 <strong>
-                  {entry.from_stage ? `Moved to ${STAGE_BY_CODE[entry.to_stage].label}` : 'Submitted'}
+                  {!entry.from_stage
+                    ? 'Submitted'
+                    : entry.to_stage === 'DECLINED'
+                      ? 'Declined'
+                      : `Moved to ${STAGE_BY_CODE[entry.to_stage].label}`}
                 </strong>
-                <p>{entry.reason}</p>
+                {entry.reason && <p>{entry.reason}</p>}
                 <span className="muted small">
                   {entry.changed_by_name} · {formatDate(entry.changed_at)}
                 </span>

@@ -76,10 +76,20 @@ export interface IdeaListItem extends Idea {
   submitted_by_me: boolean;
 }
 
+/**
+ * One row of the "Review scores" table. Mock data: one card per reviewer.
+ * Supabase (table idea_transition): one card per scored move, with its stage and date.
+ */
 export interface ReviewerScorecard {
+  /** Unique within one idea (React key). */
+  key: string;
   reviewer_id: number;
   reviewer_name: string;
+  /** Scores by criterion_id of SCORING_CRITERIA. */
   scores: Record<number, number>;
+  /** Stage the idea was moved to with this review (Supabase only). */
+  to_stage?: IdeaStage;
+  reviewed_at?: string;
 }
 
 export interface StageHistoryEntry extends IdeaStageHistory {

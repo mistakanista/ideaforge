@@ -1,11 +1,22 @@
-// Data source for VITE_DATA_SOURCE=supabase (US-1): categories and ideas come from the database,
-// where triggers and row level security enforce the rules (see build/supabase/migrations).
-// Votes, reviewer scores, stage history, users and category changes have no tables yet; they are
+// Data source for VITE_DATA_SOURCE=supabase (US-1, US-3): categories, ideas, review scores and stage
+// history come from the database, where triggers and row level security enforce the rules
+// (see build/supabase/migrations). Votes, users and category changes have no tables yet; they are
 // still taken from mockRepository, matched by idea_id and title (demo ideas 1-60 have the same ids).
 import type { AppUser, Category, IdeaDetails, IdeaListItem } from '../types';
 import { mockRepository } from './mockRepository';
 import type { IdeaRepository } from './repository';
-import { IDEA_COLUMNS, NO_VOTES, toAppError, toIdea, toListItem, type IdeaRow, type VoteInfo } from './supabaseMapping';
+import {
+  IDEA_COLUMNS,
+  NO_VOTES,
+  TRANSITION_COLUMNS,
+  toAppError,
+  toIdea,
+  toListItem,
+  toReviewDetails,
+  type IdeaRow,
+  type TransitionRow,
+  type VoteInfo,
+} from './supabaseMapping';
 import { getSupabaseClient } from './supabaseClient';
 
 const IDEA_WITH_NAMES = `${IDEA_COLUMNS}, category(name), submitter:app_user!idea_submitter_id_fkey(display_name)`;
@@ -48,20 +59,21 @@ export const supabaseRepository: IdeaRepository = {
   },
 
   async getIdeaDetails(ideaId, viewer): Promise<IdeaDetails | null> {
-    const [{ data, error }, ownId] = await Promise.all([
-      getSupabaseClient().from('idea').select(IDEA_WITH_NAMES).eq('idea_id', ideaId).maybeSingle<IdeaRow>(),
+    const client = getSupabaseClient();
+    const [{ data, error }, transitions, ownId] = await Promise.all([
+      client.from('idea').select(IDEA_WITH_NAMES).eq('idea_id', ideaId).maybeSingle<IdeaRow>(),
+      // Row level security returns the history only if the viewer may see the idea.
+      client.from('idea_transition').select(TRANSITION_COLUMNS).eq('idea_id', ideaId).returns<TransitionRow[]>(),
       ownUserId(),
     ]);
     if (error) throw toAppError(error);
+    if (transitions.error) throw toAppError(transitions.error);
     if (!data) return null; // not found, or not visible for the viewer (confidential)
     const row = data;
     const mock = await mockRepository.getIdeaDetails(ideaId, viewer);
     const sameIdea = mock !== null && mock.idea.title === row.title;
-    return {
-      idea: toListItem(row, sameIdea ? { vote_count: mock.idea.vote_count, voted_by_me: mock.idea.voted_by_me } : NO_VOTES, ownId),
-      scorecards: sameIdea ? mock.scorecards : [],
-      history: sameIdea ? mock.history : [],
-    };
+    const idea = toListItem(row, sameIdea ? { vote_count: mock.idea.vote_count, voted_by_me: mock.idea.voted_by_me } : NO_VOTES, ownId);
+    return { idea, ...toReviewDetails(idea, transitions.data) };
   },
 
   async createIdea(input) {

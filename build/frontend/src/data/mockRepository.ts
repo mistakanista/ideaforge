@@ -87,6 +87,7 @@ export const mockRepository: IdeaRepository = {
     const byReviewer = new Map<number, ReviewerScorecard>();
     for (const score of db.scores.filter((s) => s.idea_id === ideaId)) {
       const card = byReviewer.get(score.reviewer_id) ?? {
+        key: String(score.reviewer_id),
         reviewer_id: score.reviewer_id,
         reviewer_name: userName(db, score.reviewer_id),
         scores: {},

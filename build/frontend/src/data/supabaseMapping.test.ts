@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { RuleViolation } from './repository';
-import { NO_VOTES, toAppError, toIdea, toListItem, type IdeaRow } from './supabaseMapping';
+import { NO_VOTES, toAppError, toIdea, toListItem, toReviewDetails, type IdeaRow, type TransitionRow } from './supabaseMapping';
 
 const row: IdeaRow = {
   idea_id: 61,
@@ -68,5 +68,62 @@ describe('toAppError', () => {
     const err = toAppError({ code: '08006', message: 'connection failure' });
     expect(err).not.toBeInstanceOf(RuleViolation);
     expect(err.message).toBe('Database error: connection failure');
+  });
+});
+
+describe('toReviewDetails', () => {
+  const idea = toListItem({ ...row, current_stage: 'DECLINED' });
+  const move = (id: number, to: TransitionRow['to_stage'], at: string, extra: Partial<TransitionRow> = {}): TransitionRow => ({
+    transition_id: id,
+    from_stage: 'SUBMITTED',
+    to_stage: to,
+    changed_by: 2,
+    reason: null,
+    score_impact: 4,
+    score_cost: 2,
+    score_feasibility: 5,
+    created_at: at,
+    reviewer: { display_name: 'Ruth Evans' },
+    ...extra,
+  });
+  // Given in random order on purpose
+  const rows = [
+    move(12, 'DECLINED', '2026-10-12T09:00:00+00:00', {
+      from_stage: 'UNDER_REVIEW', changed_by: 3, reason: 'Too expensive', score_impact: null, score_cost: null,
+      score_feasibility: null, reviewer: { display_name: 'Tom Hallworth' },
+    }),
+    move(11, 'UNDER_REVIEW', '2026-10-11T09:00:00+00:00', { reason: 'Good start' }),
+  ];
+
+  it('makes one scorecard per scored move, oldest first, with the scores by criterion', () => {
+    const { scorecards } = toReviewDetails(idea, rows);
+    expect(scorecards).toHaveLength(1); // the decline has no scores
+    expect(scorecards[0]).toEqual({
+      key: '11',
+      reviewer_id: 2,
+      reviewer_name: 'Ruth Evans',
+      scores: { 1: 2, 2: 5, 3: 4 }, // 1 COST, 2 FEASIBILITY, 3 IMPACT (config.ts)
+      to_stage: 'UNDER_REVIEW',
+      reviewed_at: '2026-10-11T09:00:00+00:00',
+    });
+  });
+  it('keeps the scores of a decline with scores', () => {
+    const scored = [...rows.slice(1), { ...rows[0], score_impact: 1, score_cost: 1, score_feasibility: 2 }];
+    expect(toReviewDetails(idea, scored).scorecards.map((c) => c.key)).toEqual(['11', '12']);
+  });
+  it('builds the history newest first and ends with the submission', () => {
+    const { history } = toReviewDetails(idea, rows);
+    expect(history.map((h) => [h.from_stage, h.to_stage, h.changed_by_name, h.reason])).toEqual([
+      ['UNDER_REVIEW', 'DECLINED', 'Tom Hallworth', 'Too expensive'],
+      ['SUBMITTED', 'UNDER_REVIEW', 'Ruth Evans', 'Good start'],
+      [null, 'SUBMITTED', 'Sofia Marin', 'Idea submitted.'],
+    ]);
+    expect(history[2].changed_at).toBe(row.created_at);
+  });
+  it('shows only the submission for an idea without transitions', () => {
+    const { scorecards, history } = toReviewDetails(idea, []);
+    expect(scorecards).toEqual([]);
+    expect(history).toHaveLength(1);
+    expect(history[0].to_stage).toBe('SUBMITTED');
   });
 });
