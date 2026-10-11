@@ -91,14 +91,15 @@ function Footer() {
 
 /**
  * Every page except /login requires a signed-in user; the requested page is opened after sign-in.
+ * After "Sign out" the next user starts on the dashboard with default filters instead.
  * Users who still have an initial password are sent to /welcome first (US-0 step 4).
  */
 function RequireAuth({ children, passwordStep = false }: { children: ReactNode; passwordStep?: boolean }) {
-  const { status, mustChangePassword } = useCurrentUser();
+  const { status, mustChangePassword, signedOutByUser } = useCurrentUser();
   const location = useLocation();
   const from = (location.state as { from?: string } | null)?.from ?? location.pathname + location.search;
   if (status === 'loading') return <p className="muted">Loading…</p>;
-  if (status === 'signedOut') return <Navigate to="/login" replace state={{ from }} />;
+  if (status === 'signedOut') return <Navigate to="/login" replace state={signedOutByUser ? null : { from }} />;
   if (mustChangePassword && !passwordStep) return <Navigate to="/welcome" replace state={{ from }} />;
   return <>{children}</>;
 }

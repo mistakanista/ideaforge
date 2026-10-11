@@ -35,3 +35,16 @@ Builder: Gernot · Checked by: Uli
 - What went wrong, and how we fixed it: nothing
 - What we learned about building with AI: it is good to make small steps, then everything seems to work fine, Claude writes a lot of tests out of the box
 - Saved version: US-1 implement supabaseRepo
+
+## 11.10.2026 · User story 2 : implement dashboard with data from supabase
+Builder: Gernot · Checked by: Uli
+
+- What we asked for: user story US-2: adjust the filters, put also the stages in a dropdown, make the users filterable and add a chip for my ideas
+- What the AI changed: it changed the filters and the dashboard pages
+- How we checked it:
+  - Frontend: checked the filters, checked the own ideas, created a confidential idea (it showed up for the user who created it)
+- What went wrong, and how we fixed it: 
+  - the my chip did not work on the first attempt because Claude mixed up the supabase ids with the mock ids
+  - after logout and login the filters of the previous user were still active
+- What we learned about building with AI: the code is already to difficult to fix such a problem without AI in a short time
+- Saved version: US-2 reset filter after logout and login

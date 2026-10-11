@@ -29,6 +29,8 @@ interface CurrentUserContextValue {
   /** Reload users after role changes or a data reset. */
   refreshUsers: () => Promise<void>;
   signOut: () => Promise<void>;
+  /** The user clicked "Sign out": the login page must not send the next user back to the last page and filters. */
+  signedOutByUser: boolean;
   /** Why the user was signed out again (e.g. deactivated account); shown on the login page. */
   notice: string | null;
   /** Supabase mode: the user still has to replace the initial password (app_user.must_change_password). */
@@ -80,6 +82,7 @@ function MockUserProvider({ children }: { children: ReactNode }) {
         actAs,
         refreshUsers,
         signOut: async () => {},
+        signedOutByUser: false,
         notice: null,
         mustChangePassword: false,
         reloadProfile: async () => {},
@@ -97,6 +100,7 @@ function SupabaseUserProvider({ children }: { children: ReactNode }) {
   const [users, setUsers] = useState<AppUser[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
   const [mustChangePassword, setMustChangePassword] = useState(false);
+  const [signedOutByUser, setSignedOutByUser] = useState(false);
 
   const refreshUsers = useCallback(async () => {
     setUsers(await repository.listUsers());
@@ -106,7 +110,10 @@ function SupabaseUserProvider({ children }: { children: ReactNode }) {
   // (Supabase recommends not to call other Supabase functions inside onAuthStateChange).
   useEffect(() => {
     void supabase.auth.getSession().then(({ data }) => setSession(data.session));
-    const { data } = supabase.auth.onAuthStateChange((_event, next) => setSession(next));
+    const { data } = supabase.auth.onAuthStateChange((_event, next) => {
+      setSession(next);
+      if (next) setSignedOutByUser(false);
+    });
     return () => data.subscription.unsubscribe();
   }, [supabase]);
 
@@ -157,6 +164,7 @@ function SupabaseUserProvider({ children }: { children: ReactNode }) {
 
   const signOut = useCallback(async () => {
     setNotice(null);
+    setSignedOutByUser(true);
     await supabase.auth.signOut();
   }, [supabase]);
 
@@ -172,6 +180,7 @@ function SupabaseUserProvider({ children }: { children: ReactNode }) {
         actAs: () => {},
         refreshUsers,
         signOut,
+        signedOutByUser,
         notice,
         mustChangePassword,
         reloadProfile,

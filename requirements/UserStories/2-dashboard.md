@@ -10,4 +10,4 @@ As an employee, reviewer or admin of Tallis & Reeve, I want to see, browse and f
 - [ ] There is a filter option for votes
 - [ ] There is a filter or search option for users, especially I want to filter my ideas
 
-## Status: open
+## Status: review
