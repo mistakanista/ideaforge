@@ -1,9 +1,10 @@
 -- Checks the local demo data: the users created by seed.sql (US-0 step 2: 12 dummy users and the
--- client admin Dev Anand) and the 60 demo ideas from scripts/import_demo_ideas.sql (US-1).
+-- client admin Dev Anand) the 60 demo ideas from scripts/import_demo_ideas.sql (US-1) and their review history
+-- from scripts/import_demo_transitions.sql (US-3).
 -- Run after `npx supabase db reset`. Read-only checks, rolled back at the end.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(17);
+select plan(22);
 
 select is((select count(*) from auth.users where email like '%@tallis.uk'), 13::bigint, '13 demo users exist in Supabase Auth');
 select is((select count(*) from public.app_user where email like '%@tallis.uk'), 13::bigint, 'each demo user has an app_user row');
@@ -54,6 +55,24 @@ select is((select count(*) from public.idea where is_confidential), 8::bigint, '
 select is(
   (select count(*) from public.idea i join public.app_user u on u.user_id = i.submitter_id where i.office <> u.office),
   0::bigint, 'every idea has the office of its submitter');
+-- Review history (US-3)
+select is((select count(*) from public.idea_transition), 75::bigint, '75 demo transitions exist (69 moves, 6 declines)');
+select is(
+  (select count(*) from public.idea_transition
+   where to_stage = 'DECLINED' and reason is not null and score_impact is null),
+  6::bigint, 'the 6 declines have a reason and no scores');
+select is(
+  (select count(*) from public.idea i
+   where i.current_stage is distinct from coalesce(
+     (select t.to_stage from public.idea_transition t where t.idea_id = i.idea_id
+      order by t.created_at desc, t.transition_id desc limit 1), 'SUBMITTED')),
+  0::bigint, 'the last transition of every idea leads to its current stage');
+select is(
+  (select count(*) from public.idea_transition t join public.idea i using (idea_id) where t.changed_by = i.submitter_id),
+  0::bigint, 'no reviewer moved their own idea');
+select is(
+  (select count(*) from public.idea_transition t join public.idea i using (idea_id) where t.created_at <= i.created_at),
+  0::bigint, 'every transition happened after the idea was submitted');
 select results_eq(
   $$ insert into public.idea (title, problem, solution, expected_impact, category_id, submitter_id)
      values ('New idea', 'p', 's', 'i', 1, (select user_id from public.app_user where email = 'daniel.okafor@tallis.uk'))
