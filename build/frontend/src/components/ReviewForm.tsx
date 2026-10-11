@@ -1,6 +1,6 @@
 // Inline review form for reviewers (US-3): move the idea to the next stage with scores,
 // or decline it with a reason (scores optional, all three or none).
-import { useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { MAX_SCORE, MIN_SCORE, SCORING_CRITERIA, STAGE_BY_CODE } from '../config';
 import { repository, RuleViolation } from '../data';
 import { nextStage, validateReview, type ReviewDraft, type ReviewField } from '../lib/reviewRules';
@@ -31,14 +31,27 @@ export function ReviewForm({ idea, onSaved, onCancel }: ReviewFormProps) {
   const [errors, setErrors] = useState<Partial<Record<ReviewField, string>>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  // A decline is final: it is saved only after a second click on "Yes, decline idea".
+  const [confirmingDecline, setConfirmingDecline] = useState(false);
+  const confirmButton = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (confirmingDecline) confirmButton.current?.focus();
+  }, [confirmingDecline]);
 
   const next = nextStage(idea.current_stage);
   const id = (name: string) => `review-${idea.idea_id}-${name}`;
   const declining = draft.decision === 'DECLINE';
   const hasScores = draft.impact !== null || draft.cost !== null || draft.feasibility !== null;
 
+  /** Every change of the form cancels a pending decline confirmation. */
+  function changeDraft(change: (d: ReviewDraft) => ReviewDraft) {
+    setDraft(change);
+    setConfirmingDecline(false);
+  }
+
   function update<K extends keyof ReviewDraft>(key: K, value: ReviewDraft[K]) {
-    setDraft((d) => ({ ...d, [key]: value }));
+    changeDraft((d) => ({ ...d, [key]: value }));
   }
 
   async function handleSubmit(event: FormEvent) {
@@ -50,6 +63,10 @@ export function ReviewForm({ idea, onSaved, onCancel }: ReviewFormProps) {
       return;
     }
     setErrors({});
+    if (result.input.to_stage === 'DECLINED' && !confirmingDecline) {
+      setConfirmingDecline(true);
+      return;
+    }
     setSaving(true);
     setFormError(null);
     try {
@@ -141,7 +158,7 @@ export function ReviewForm({ idea, onSaved, onCancel }: ReviewFormProps) {
           <button
             type="button"
             className="link-button"
-            onClick={() => setDraft((d) => ({ ...d, impact: null, cost: null, feasibility: null }))}
+            onClick={() => changeDraft((d) => ({ ...d, impact: null, cost: null, feasibility: null }))}
           >
             Clear scores
           </button>
@@ -165,14 +182,31 @@ export function ReviewForm({ idea, onSaved, onCancel }: ReviewFormProps) {
         {errorText('reason')}
       </div>
 
-      <div className="form-actions">
-        <button type="button" className="btn btn-secondary" onClick={onCancel} disabled={saving}>
-          Cancel
-        </button>
-        <button type="submit" className="btn btn-primary" disabled={saving}>
-          {saving ? 'Saving…' : 'Save review'}
-        </button>
-      </div>
+      {confirmingDecline ? (
+        <div className="confirm-box" role="alert">
+          <p>
+            <strong>Decline this idea?</strong> A declined idea is final and can't be moved to another stage. The
+            submitter will see your reason, and the idea will no longer appear under "Active ideas".
+          </p>
+          <div className="form-actions">
+            <button type="button" className="btn btn-secondary" onClick={() => setConfirmingDecline(false)} disabled={saving}>
+              Back to review
+            </button>
+            <button type="submit" className="btn btn-primary" ref={confirmButton} disabled={saving}>
+              {saving ? 'Saving…' : 'Yes, decline idea'}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="form-actions">
+          <button type="button" className="btn btn-secondary" onClick={onCancel} disabled={saving}>
+            Cancel
+          </button>
+          <button type="submit" className="btn btn-primary" disabled={saving}>
+            {saving ? 'Saving…' : 'Save review'}
+          </button>
+        </div>
+      )}
     </form>
   );
 }

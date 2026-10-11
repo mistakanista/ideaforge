@@ -48,3 +48,20 @@ Builder: Gernot · Checked by: Uli
   - after logout and login the filters of the previous user were still active
 - What we learned about building with AI: the code is already to difficult to fix such a problem without AI in a short time
 - Saved version: US-2 reset filter after logout and login
+
+## 11.10.2026 · User story 3 : implement reviews
+Builder: Gernot · Checked by: Uli
+
+- What we asked for: user story US-3: implement reviews, with a simplified data structure (only one table)
+- What the AI changed: 
+  - simplified and created data structure for supabase
+  - migrated the review dummy data to import it
+  - displayed the review data from the database instead of the mock data
+  - implemented the review form
+- How we checked it:
+  - Supabase: table was added, data was added, new row was added after sending a review
+  - Frontend: moved a review to the next stage, declined a review
+- What went wrong, and how we fixed it:
+  - the acceptance criteria was initially not so clear, so no scoring was allowed in case the idea was declined, now scoring is optional
+- What we learned about building with AI: you have to stay concentrated and keep on doing it with small steps
+- Saved version: US-3 add confirmation before declining an idea

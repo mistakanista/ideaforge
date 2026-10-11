@@ -15,4 +15,4 @@ As a reviewer of Tallis & Reeve, I want change the state of the idea, so that it
 - [ ] if the reviewer selects the next stage, he has to score the idea for impact, cost and feasibility, giving a reason is optional
 - [ ] if the reviewer selects the decline, he has to give a reason, the scores are optional
 
-## Status: in progress
+## Status: review
