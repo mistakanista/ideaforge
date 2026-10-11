@@ -65,6 +65,7 @@ function toListItem(db: Database, idea: Idea, viewer: AppUser): IdeaListItem {
     office: submitter?.office ?? 'BRISTOL',
     vote_count: votes.length,
     voted_by_me: votes.some((v) => v.user_id === viewer.user_id),
+    submitted_by_me: idea.submitter_id === viewer.user_id,
   };
 }
 

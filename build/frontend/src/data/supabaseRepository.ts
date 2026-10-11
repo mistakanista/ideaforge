@@ -16,6 +16,20 @@ async function mockVotes(viewer: AppUser): Promise<Map<number, IdeaListItem>> {
   return new Map(items.map((item) => [item.idea_id, item]));
 }
 
+/** The signed-in user's own app_user.user_id, which differs from the mock user id. */
+async function ownUserId(): Promise<number | null> {
+  const client = getSupabaseClient();
+  const { data: auth } = await client.auth.getSession();
+  if (!auth.session) return null;
+  const { data, error } = await client
+    .from('app_user')
+    .select('user_id')
+    .eq('auth_user_id', auth.session.user.id)
+    .maybeSingle<{ user_id: number }>();
+  if (error) throw toAppError(error);
+  return data?.user_id ?? null;
+}
+
 function votesFor(row: IdeaRow, mock: Map<number, IdeaListItem>): VoteInfo {
   const item = mock.get(row.idea_id);
   return item && item.title === row.title ? { vote_count: item.vote_count, voted_by_me: item.voted_by_me } : NO_VOTES;
@@ -24,29 +38,27 @@ function votesFor(row: IdeaRow, mock: Map<number, IdeaListItem>): VoteInfo {
 export const supabaseRepository: IdeaRepository = {
   async listIdeas(viewer) {
     // Row level security returns only the ideas the signed-in user may see (confidential rule).
-    const { data, error } = await getSupabaseClient()
-      .from('idea')
-      .select(IDEA_WITH_NAMES)
-      .order('created_at', { ascending: false })
-      .returns<IdeaRow[]>();
+    const [{ data, error }, ownId] = await Promise.all([
+      getSupabaseClient().from('idea').select(IDEA_WITH_NAMES).order('created_at', { ascending: false }).returns<IdeaRow[]>(),
+      ownUserId(),
+    ]);
     if (error) throw toAppError(error);
     const mock = await mockVotes(viewer);
-    return data.map((row) => toListItem(row, votesFor(row, mock)));
+    return data.map((row) => toListItem(row, votesFor(row, mock), ownId));
   },
 
   async getIdeaDetails(ideaId, viewer): Promise<IdeaDetails | null> {
-    const { data, error } = await getSupabaseClient()
-      .from('idea')
-      .select(IDEA_WITH_NAMES)
-      .eq('idea_id', ideaId)
-      .maybeSingle<IdeaRow>();
+    const [{ data, error }, ownId] = await Promise.all([
+      getSupabaseClient().from('idea').select(IDEA_WITH_NAMES).eq('idea_id', ideaId).maybeSingle<IdeaRow>(),
+      ownUserId(),
+    ]);
     if (error) throw toAppError(error);
     if (!data) return null; // not found, or not visible for the viewer (confidential)
     const row = data;
     const mock = await mockRepository.getIdeaDetails(ideaId, viewer);
     const sameIdea = mock !== null && mock.idea.title === row.title;
     return {
-      idea: toListItem(row, sameIdea ? { vote_count: mock.idea.vote_count, voted_by_me: mock.idea.voted_by_me } : NO_VOTES),
+      idea: toListItem(row, sameIdea ? { vote_count: mock.idea.vote_count, voted_by_me: mock.idea.voted_by_me } : NO_VOTES, ownId),
       scorecards: sameIdea ? mock.scorecards : [],
       history: sameIdea ? mock.history : [],
     };

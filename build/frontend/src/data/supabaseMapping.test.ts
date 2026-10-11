@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { RuleViolation } from './repository';
-import { toAppError, toIdea, toListItem, type IdeaRow } from './supabaseMapping';
+import { NO_VOTES, toAppError, toIdea, toListItem, type IdeaRow } from './supabaseMapping';
 
 const row: IdeaRow = {
   idea_id: 61,
@@ -29,6 +29,11 @@ describe('toIdea', () => {
 });
 
 describe('toListItem', () => {
+  it('marks the idea as submitted by the viewer only for the own database user id', () => {
+    expect(toListItem(row, NO_VOTES, row.submitter_id).submitted_by_me).toBe(true);
+    expect(toListItem(row, NO_VOTES, row.submitter_id + 1).submitted_by_me).toBe(false);
+    expect(toListItem(row).submitted_by_me).toBe(false);
+  });
   it('takes category name, submitter name and office from the row', () => {
     const item = toListItem(row, { vote_count: 4, voted_by_me: true });
     expect(item).toMatchObject({

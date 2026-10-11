@@ -4,12 +4,17 @@ import type { AppUser, Idea, IdeaListItem, IdeaStage, OfficeCode } from '../type
 
 export type SortOrder = 'newest' | 'votes';
 
+/** null = active ideas only (the default list), 'ALL' = every stage. */
+export type StageFilter = IdeaStage | 'ALL' | null;
+
 export interface IdeaFilters {
   search: string;
   categoryId: number | null;
   office: OfficeCode | null;
-  stage: IdeaStage | null;
-  showDeclined: boolean;
+  stage: StageFilter;
+  submitterId: number | null;
+  /** Only the ideas of the signed-in user, in every stage. */
+  mine: boolean;
   sort: SortOrder;
 }
 
@@ -18,9 +23,13 @@ export const DEFAULT_FILTERS: IdeaFilters = {
   categoryId: null,
   office: null,
   stage: null,
-  showDeclined: false,
+  submitterId: null,
+  mine: false,
   sort: 'newest',
 };
+
+/** Stages left out of the default list; they are shown when picked in the stage filter or with "My ideas". */
+export const HIDDEN_BY_DEFAULT: readonly IdeaStage[] = ['IMPLEMENTED', 'DECLINED'];
 
 /** Confidential ideas are only visible to the submitter and the reviewers (never to staff or admins). */
 export function canSeeIdea(idea: Pick<Idea, 'is_confidential' | 'submitter_id'>, viewer: Pick<AppUser, 'user_id' | 'role'>): boolean {
@@ -31,7 +40,7 @@ export function canSeeIdea(idea: Pick<Idea, 'is_confidential' | 'submitter_id'>,
 function matchesSearch(idea: IdeaListItem, search: string): boolean {
   const terms = search.toLowerCase().split(/\s+/).filter(Boolean);
   if (terms.length === 0) return true;
-  const text = [idea.title, idea.problem, idea.solution, idea.expected_impact].join(' ').toLowerCase();
+  const text = [idea.title, idea.problem, idea.solution, idea.expected_impact, idea.submitter_name].join(' ').toLowerCase();
   return terms.every((term) => text.includes(term));
 }
 
@@ -41,14 +50,17 @@ function applyBaseFilters(items: IdeaListItem[], f: IdeaFilters): IdeaListItem[]
     (idea) =>
       (f.categoryId === null || idea.category_id === f.categoryId) &&
       (f.office === null || idea.office === f.office) &&
+      (f.submitterId === null || idea.submitter_id === f.submitterId) &&
+      (!f.mine || idea.submitted_by_me) &&
       matchesSearch(idea, f.search),
   );
 }
 
 export function filterIdeas(items: IdeaListItem[], f: IdeaFilters): IdeaListItem[] {
   return applyBaseFilters(items, f).filter((idea) => {
+    if (f.stage === 'ALL') return true;
     if (f.stage !== null) return idea.current_stage === f.stage;
-    return f.showDeclined || idea.current_stage !== 'DECLINED';
+    return f.mine || !HIDDEN_BY_DEFAULT.includes(idea.current_stage);
   });
 }
 
@@ -56,6 +68,18 @@ export function stageCounts(items: IdeaListItem[], f: IdeaFilters): Record<IdeaS
   const counts: Record<IdeaStage, number> = { SUBMITTED: 0, UNDER_REVIEW: 0, PILOTING: 0, IMPLEMENTED: 0, DECLINED: 0 };
   for (const idea of applyBaseFilters(items, f)) counts[idea.current_stage]++;
   return counts;
+}
+
+export interface SubmitterOption {
+  id: number;
+  name: string;
+}
+
+/** People for the "Submitted by" filter, taken only from the ideas the viewer may see, sorted by name. */
+export function submitterOptions(items: IdeaListItem[]): SubmitterOption[] {
+  const byId = new Map<number, string>();
+  for (const idea of items) byId.set(idea.submitter_id, idea.submitter_name);
+  return [...byId].map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name) || a.id - b.id);
 }
 
 function newestFirst(a: IdeaListItem, b: IdeaListItem): number {

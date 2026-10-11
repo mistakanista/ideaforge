@@ -1,30 +1,56 @@
+import { useEffect, useState } from 'react';
 import { OFFICES, STAGES } from '../config';
-import type { IdeaFilters, SortOrder } from '../lib/ideaQuery';
+import { HIDDEN_BY_DEFAULT, type IdeaFilters, type SortOrder, type StageFilter, type SubmitterOption } from '../lib/ideaQuery';
 import type { Category, IdeaStage, OfficeCode } from '../types';
 
 interface FiltersProps {
   filters: IdeaFilters;
   categories: Category[];
   counts: Record<IdeaStage, number>;
+  submitters: SubmitterOption[];
   onChange: (changes: Partial<IdeaFilters>) => void;
 }
 
-export function Filters({ filters, categories, counts, onChange }: FiltersProps) {
-  const visibleStages = STAGES.filter((s) => s.code !== 'DECLINED' || filters.showDeclined);
-  const allCount = visibleStages.reduce((sum, s) => sum + counts[s.code], 0);
+export function Filters({ filters, categories, counts, submitters, onChange }: FiltersProps) {
+  const allCount = STAGES.reduce((sum, s) => sum + counts[s.code], 0);
+  const activeCount = STAGES.filter((s) => filters.mine || !HIDDEN_BY_DEFAULT.includes(s.code)).reduce(
+    (sum, s) => sum + counts[s.code],
+    0,
+  );
+  const selectedName = submitters.find((p) => p.id === filters.submitterId)?.name ?? '';
+
+  // The person field is typed into freely; the filter only applies once the text matches a name from the list.
+  const [personText, setPersonText] = useState(selectedName);
+  useEffect(() => setPersonText(selectedName), [selectedName]);
+
+  function changePerson(text: string) {
+    setPersonText(text);
+    const match = submitters.find((p) => p.name.toLowerCase() === text.trim().toLowerCase());
+    if (match) {
+      if (match.id !== filters.submitterId) onChange({ submitterId: match.id });
+    } else if (filters.submitterId !== null) {
+      onChange({ submitterId: null });
+    }
+  }
 
   return (
     <section className="card filters" aria-label="Search and filter ideas">
-      <div className="filter-grid">
-        <div className="field field-search">
-          <label htmlFor="search">Search</label>
-          <input
-            id="search"
-            type="search"
-            placeholder="Title, problem, solution or keyword"
-            value={filters.search}
-            onChange={(e) => onChange({ search: e.target.value })}
-          />
+      <div className="filter-row filter-row-1">
+        <div className="field">
+          <label htmlFor="stage">Stage</label>
+          <select
+            id="stage"
+            value={filters.stage ?? ''}
+            onChange={(e) => onChange({ stage: (e.target.value || null) as StageFilter })}
+          >
+            <option value="">{filters.mine ? 'All my ideas' : 'Active ideas'} ({activeCount})</option>
+            {STAGES.map((s) => (
+              <option key={s.code} value={s.code}>
+                {s.label} ({counts[s.code]})
+              </option>
+            ))}
+            <option value="ALL">All stages ({allCount})</option>
+          </select>
         </div>
         <div className="field">
           <label htmlFor="category">Category</label>
@@ -66,36 +92,46 @@ export function Filters({ filters, categories, counts, onChange }: FiltersProps)
         </div>
       </div>
 
-      <div className="stage-row">
-        <div className="chips" role="group" aria-label="Filter by stage">
-          <button type="button" className="chip" aria-pressed={filters.stage === null} onClick={() => onChange({ stage: null })}>
-            All <span className="chip-count">{allCount}</span>
-          </button>
-          {visibleStages.map((s) => (
-            <button
-              key={s.code}
-              type="button"
-              className="chip"
-              aria-pressed={filters.stage === s.code}
-              onClick={() => onChange({ stage: s.code })}
-            >
-              {s.label} <span className="chip-count">{counts[s.code]}</span>
-            </button>
-          ))}
-        </div>
-        <label className="checkbox">
+      <div className="filter-row filter-row-2">
+        <div className="field">
+          <label htmlFor="search">Search</label>
           <input
-            type="checkbox"
-            checked={filters.showDeclined}
-            onChange={(e) =>
-              onChange({
-                showDeclined: e.target.checked,
-                stage: !e.target.checked && filters.stage === 'DECLINED' ? null : filters.stage,
-              })
-            }
+            id="search"
+            type="search"
+            placeholder="Title, problem, solution, keyword or name"
+            value={filters.search}
+            onChange={(e) => onChange({ search: e.target.value })}
           />
-          Show declined ideas
-        </label>
+        </div>
+        <div className="field">
+          <label htmlFor="submitter">Submitted by</label>
+          <div className="input-with-action">
+            <input
+              id="submitter"
+              type="text"
+              list="submitter-options"
+              autoComplete="off"
+              placeholder="Type a name"
+              value={personText}
+              onChange={(e) => changePerson(e.target.value)}
+            />
+            {personText && (
+              <button type="button" className="btn btn-secondary" onClick={() => changePerson('')}>
+                Clear
+              </button>
+            )}
+          </div>
+          <datalist id="submitter-options">
+            {submitters.map((p) => (
+              <option key={p.id} value={p.name} />
+            ))}
+          </datalist>
+        </div>
+        <div className="field field-chip">
+          <button type="button" className="chip" aria-pressed={filters.mine} onClick={() => onChange({ mine: !filters.mine })}>
+            My ideas
+          </button>
+        </div>
       </div>
     </section>
   );

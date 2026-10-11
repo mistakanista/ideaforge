@@ -72,6 +72,8 @@ export interface IdeaListItem extends Idea {
   office: OfficeCode;
   vote_count: number;
   voted_by_me: boolean;
+  /** The viewer submitted this idea (set by the repository, since mock and database user ids differ). */
+  submitted_by_me: boolean;
 }
 
 export interface ReviewerScorecard {

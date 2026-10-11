@@ -49,13 +49,15 @@ export function toIdea(row: IdeaRow): Idea {
   };
 }
 
-export function toListItem(row: IdeaRow, votes: VoteInfo = NO_VOTES): IdeaListItem {
+/** ownUserId is the viewer's app_user.user_id in the database (not the mock user id). */
+export function toListItem(row: IdeaRow, votes: VoteInfo = NO_VOTES, ownUserId: number | null = null): IdeaListItem {
   return {
     ...toIdea(row),
     category_name: row.category?.name ?? 'Unknown',
     submitter_name: row.submitter?.display_name ?? 'Unknown',
     office: row.office,
     ...votes,
+    submitted_by_me: ownUserId !== null && row.submitter_id === ownUserId,
   };
 }
 

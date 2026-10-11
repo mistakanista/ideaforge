@@ -5,22 +5,32 @@ import { IdeaCard } from '../components/IdeaCard';
 import { Pagination } from '../components/Pagination';
 import { DEFAULT_PAGE_SIZE, OFFICES, PAGE_SIZES, STAGES, type PageSize } from '../config';
 import { repository } from '../data';
-import { DEFAULT_FILTERS, filterIdeas, paginate, sortIdeas, stageCounts, type IdeaFilters } from '../lib/ideaQuery';
+import {
+  DEFAULT_FILTERS,
+  filterIdeas,
+  paginate,
+  sortIdeas,
+  stageCounts,
+  submitterOptions,
+  type IdeaFilters,
+  type StageFilter,
+} from '../lib/ideaQuery';
 import { useCurrentUser } from '../session/CurrentUser';
-import type { Category, IdeaListItem, IdeaStage, OfficeCode } from '../types';
+import type { Category, IdeaListItem, OfficeCode } from '../types';
 
 // Filters, sort order and page live in the URL, so views can be shared and the back button works.
 function readFilters(params: URLSearchParams): IdeaFilters {
   const stage = params.get('stage');
   const office = params.get('office');
-  const showDeclined = params.get('declined') === '1';
-  const validStage = STAGES.some((s) => s.code === stage) && (stage !== 'DECLINED' || showDeclined);
+  const validStage = stage === 'ALL' || STAGES.some((s) => s.code === stage);
+  const submitterId = Number(params.get('by'));
   return {
     search: params.get('q') ?? '',
     categoryId: params.get('category') ? Number(params.get('category')) : null,
     office: OFFICES.some((o) => o.code === office) ? (office as OfficeCode) : null,
-    stage: validStage ? (stage as IdeaStage) : null,
-    showDeclined,
+    stage: validStage ? (stage as StageFilter) : null,
+    submitterId: Number.isInteger(submitterId) && submitterId > 0 ? submitterId : null,
+    mine: params.get('mine') === '1',
     sort: params.get('sort') === 'votes' ? 'votes' : 'newest',
   };
 }
@@ -31,7 +41,8 @@ function writeFilters(f: IdeaFilters, page: number, size: PageSize): URLSearchPa
   if (f.categoryId !== null) params.set('category', String(f.categoryId));
   if (f.office) params.set('office', f.office);
   if (f.stage) params.set('stage', f.stage);
-  if (f.showDeclined) params.set('declined', '1');
+  if (f.submitterId !== null) params.set('by', String(f.submitterId));
+  if (f.mine) params.set('mine', '1');
   if (f.sort !== DEFAULT_FILTERS.sort) params.set('sort', f.sort);
   if (page > 1) params.set('page', String(page));
   if (size !== DEFAULT_PAGE_SIZE) params.set('size', String(size));
@@ -67,6 +78,7 @@ export function DashboardPage() {
 
   const filtered = ideas ? sortIdeas(filterIdeas(ideas, filters), filters.sort) : [];
   const counts = stageCounts(ideas ?? [], filters);
+  const submitters = submitterOptions(ideas ?? []);
   const page = paginate(filtered, requestedPage, pageSize);
 
   function updateFilters(changes: Partial<IdeaFilters>) {
@@ -112,7 +124,7 @@ export function DashboardPage() {
         </p>
       )}
 
-      <Filters filters={filters} categories={categories} counts={counts} onChange={updateFilters} />
+      <Filters filters={filters} categories={categories} counts={counts} submitters={submitters} onChange={updateFilters} />
 
       {ideas === null ? (
         <p className="muted">Loading ideas…</p>

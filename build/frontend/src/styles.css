@@ -117,15 +117,18 @@ textarea { resize: vertical; }
 .side-info li { margin-bottom: 0.5rem; }
 
 /* Filters */
-.filter-grid { display: grid; grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr)); gap: 0.75rem; }
-.filter-grid .field { margin-bottom: 0.5rem; }
-.stage-row { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
-.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.filter-row { display: grid; gap: 0.75rem; }
+.filter-row-1 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.filter-row-2 { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) auto; align-items: end; }
+.filter-row .field { margin-bottom: 0.5rem; }
+.field-chip { display: flex; align-items: flex-end; }
+.field-chip .chip { min-height: var(--tap); }
+.input-with-action { display: flex; gap: 0.5rem; }
+.input-with-action input { flex: 1; min-width: 0; }
 .chip { font: inherit; font-weight: 600; min-height: 40px; padding: 0 1rem; border-radius: 999px; border: 1px solid var(--border); background: var(--white); color: var(--navy); cursor: pointer; }
 .chip:hover { border-color: var(--navy); }
 .chip[aria-pressed='true'] { background: var(--navy); color: var(--white); border-color: var(--navy); }
 .chip[aria-pressed='true']::before { content: '✓ '; }
-.chip-count { font-weight: 400; opacity: 0.8; }
 
 /* Badges */
 .badges { display: flex; gap: 0.4rem; flex-wrap: wrap; }
@@ -190,8 +193,9 @@ textarea { resize: vertical; }
 
 /* Phones and small tablets */
 @media (max-width: 860px) {
-  .filter-grid { grid-template-columns: 1fr 1fr; }
-  .field-search { grid-column: 1 / -1; }
+  .filter-row-1 { grid-template-columns: 1fr 1fr; }
+  .filter-row-2 { grid-template-columns: 1fr 1fr; }
+  .filter-row-2 .field:first-child { grid-column: 1 / -1; }
   .idea-list, .submit-layout, .details { grid-template-columns: 1fr; }
   .acting-as { margin-left: 0; width: 100%; }
   .acting-as select { max-width: none; flex: 1; }
@@ -199,7 +203,8 @@ textarea { resize: vertical; }
 }
 @media (max-width: 520px) {
   h1 { font-size: 1.6rem; }
-  .filter-grid { grid-template-columns: 1fr; }
+  .filter-row-1, .filter-row-2 { grid-template-columns: 1fr; }
+  .field-chip .chip { width: 100%; }
   .card-actions, .card-actions .btn { width: 100%; }
   .card-actions .btn { flex: 1; }
   .page-head .btn { width: 100%; }
