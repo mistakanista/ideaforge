@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { formatDate, MAX_SCORE, SCORING_CRITERIA, STAGE_BY_CODE } from '../config';
 import { repository } from '../data';
+import { canReview } from '../lib/reviewRules';
 import { useCurrentUser } from '../session/CurrentUser';
 import type { IdeaDetails as Details, ReviewerScorecard } from '../types';
+import { ReviewForm } from './ReviewForm';
 
 function average(values: number[]): number | null {
   return values.length ? values.reduce((a, b) => a + b, 0) / values.length : null;
@@ -16,9 +18,11 @@ function criterionAverage(cards: ReviewerScorecard[], criterionId: number): numb
   return average(cards.map((c) => c.scores[criterionId]).filter((v): v is number => v !== undefined));
 }
 
-export function IdeaDetails({ ideaId }: { ideaId: number }) {
+export function IdeaDetails({ ideaId, onReviewed }: { ideaId: number; onReviewed?: () => void }) {
   const { user } = useCurrentUser();
   const [details, setDetails] = useState<Details | null | undefined>(undefined);
+  const [reviewing, setReviewing] = useState(false);
+  const [reloadCount, setReloadCount] = useState(0);
 
   useEffect(() => {
     if (!user) return;
@@ -29,13 +33,20 @@ export function IdeaDetails({ ideaId }: { ideaId: number }) {
     return () => {
       cancelled = true;
     };
-  }, [ideaId, user]);
+  }, [ideaId, user, reloadCount]);
 
   if (details === undefined) return <p className="muted">Loading details…</p>;
   if (details === null) return <p className="muted">This idea is not available.</p>;
 
   const { idea, scorecards, history } = details;
   const overall = average(scorecards.flatMap((c) => Object.values(c.scores)));
+  const mayReview = user !== null && canReview(user, idea);
+
+  function handleReviewed() {
+    setReviewing(false);
+    setReloadCount((n) => n + 1);
+    onReviewed?.();
+  }
 
   return (
     <div className="details">
@@ -49,7 +60,17 @@ export function IdeaDetails({ ideaId }: { ideaId: number }) {
       </div>
 
       <div className="details-section">
-        <h4>Review scores</h4>
+        <div className="section-header">
+          <h4>Review scores</h4>
+          {mayReview && !reviewing && (
+            <button type="button" className="btn btn-primary btn-small" onClick={() => setReviewing(true)}>
+              Review
+            </button>
+          )}
+        </div>
+        {mayReview && reviewing && (
+          <ReviewForm idea={idea} onSaved={handleReviewed} onCancel={() => setReviewing(false)} />
+        )}
         {scorecards.length === 0 ? (
           <p className="muted">Not scored yet.</p>
         ) : (

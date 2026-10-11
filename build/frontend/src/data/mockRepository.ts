@@ -1,6 +1,8 @@
 // Prototype data source: keeps the demo database in localStorage (falls back to memory)
 // and enforces the same rules the database triggers will enforce later.
+import { SCORING_CRITERIA } from '../config';
 import { canSeeIdea } from '../lib/ideaQuery';
+import { canReview, nextStage } from '../lib/reviewRules';
 import { upsertUserByEmail, type SessionProfile } from '../lib/sessionUser';
 import type { AppUser, Category, Idea, IdeaDetails, IdeaListItem, ReviewerScorecard } from '../types';
 import { RuleViolation, type IdeaRepository } from './repository';
@@ -137,6 +139,48 @@ export const mockRepository: IdeaRepository = {
     });
     save(db);
     return idea;
+  },
+
+  async reviewIdea(ideaId, input, reviewer) {
+    const db = load();
+    const idea = db.ideas.find((i) => i.idea_id === ideaId);
+    if (!idea || !canSeeIdea(idea, reviewer)) throw new RuleViolation('This idea is not available.');
+    if (reviewer.role !== 'REVIEWER') throw new RuleViolation('Only reviewers can move ideas');
+    if (idea.submitter_id === reviewer.user_id) throw new RuleViolation('Reviewers cannot review their own ideas');
+    const allowed = input.to_stage === 'DECLINED' || input.to_stage === nextStage(idea.current_stage);
+    if (!canReview(reviewer, { current_stage: idea.current_stage, submitted_by_me: false }) || !allowed) {
+      throw new RuleViolation(`An idea in stage ${idea.current_stage} cannot be moved to ${input.to_stage}`);
+    }
+    if (input.to_stage === 'DECLINED' ? !input.reason.trim() : !input.scores) {
+      throw new RuleViolation('A decline needs a reason; every other move needs all three scores.');
+    }
+
+    const now = new Date().toISOString();
+    db.history.push({
+      history_id: nextId(db.history, (h) => h.history_id),
+      idea_id: ideaId,
+      from_stage: idea.current_stage,
+      to_stage: input.to_stage,
+      changed_by: reviewer.user_id,
+      reason: input.reason.trim(),
+      changed_at: now,
+    });
+    idea.current_stage = input.to_stage;
+    if (input.scores) {
+      // The mock data keeps one score set per reviewer and idea: the newest review replaces the older one.
+      const byCode = { IMPACT: input.scores.impact, COST: input.scores.cost, FEASIBILITY: input.scores.feasibility };
+      db.scores = db.scores.filter((s) => !(s.idea_id === ideaId && s.reviewer_id === reviewer.user_id));
+      for (const criterion of SCORING_CRITERIA) {
+        db.scores.push({
+          idea_id: ideaId,
+          reviewer_id: reviewer.user_id,
+          criterion_id: criterion.criterion_id,
+          score: byCode[criterion.code],
+          remark: null,
+        });
+      }
+    }
+    save(db);
   },
 
   async toggleVote(ideaId, user) {

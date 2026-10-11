@@ -8,9 +8,11 @@ interface IdeaCardProps {
   expanded: boolean;
   onToggleDetails: () => void;
   onToggleVote: () => void;
+  /** Called after a reviewer saved a review, so the list can show the new stage. */
+  onReviewed?: () => void;
 }
 
-export function IdeaCard({ idea, expanded, onToggleDetails, onToggleVote }: IdeaCardProps) {
+export function IdeaCard({ idea, expanded, onToggleDetails, onToggleVote, onReviewed }: IdeaCardProps) {
   const detailsId = `idea-details-${idea.idea_id}`;
   return (
     <article className={`card idea-card${expanded ? ' expanded' : ''}`} aria-labelledby={`idea-title-${idea.idea_id}`}>
@@ -52,7 +54,7 @@ export function IdeaCard({ idea, expanded, onToggleDetails, onToggleVote }: Idea
 
       {expanded && (
         <div id={detailsId}>
-          <IdeaDetails ideaId={idea.idea_id} />
+          <IdeaDetails ideaId={idea.idea_id} onReviewed={onReviewed} />
         </div>
       )}
     </article>

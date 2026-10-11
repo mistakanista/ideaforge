@@ -145,6 +145,7 @@ export function DashboardPage() {
               expanded={expanded.has(idea.idea_id)}
               onToggleDetails={() => toggleDetails(idea.idea_id)}
               onToggleVote={() => void toggleVote(idea.idea_id)}
+              onReviewed={() => void loadIdeas()}
             />
           ))}
         </div>

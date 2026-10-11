@@ -118,3 +118,20 @@ export interface CategoryInput {
   description: string;
   is_active: boolean;
 }
+
+/** The three review scores (1–5, 5 = best / least cost). */
+export interface ReviewScores {
+  impact: number;
+  cost: number;
+  feasibility: number;
+}
+
+/**
+ * A review = one move of an idea (table idea_transition, US-3). Moves to the next stage need scores,
+ * a decline needs a reason and may have scores (all three or none).
+ */
+export interface ReviewInput {
+  to_stage: IdeaStage;
+  reason: string;
+  scores: ReviewScores | null;
+}

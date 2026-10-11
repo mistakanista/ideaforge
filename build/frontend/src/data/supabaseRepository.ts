@@ -94,6 +94,22 @@ export const supabaseRepository: IdeaRepository = {
     return toIdea(data);
   },
 
+  async reviewIdea(ideaId, input) {
+    // Reviewer, previous stage and time are set by the database (trigger idea_transition_check),
+    // which also checks the role, the own-idea rule and the stage order.
+    const { error } = await getSupabaseClient()
+      .from('idea_transition')
+      .insert({
+        idea_id: ideaId,
+        to_stage: input.to_stage,
+        reason: input.reason.trim() || null,
+        score_impact: input.scores?.impact ?? null,
+        score_cost: input.scores?.cost ?? null,
+        score_feasibility: input.scores?.feasibility ?? null,
+      });
+    if (error) throw toAppError(error);
+  },
+
   async listCategories(): Promise<Category[]> {
     const { data, error } = await getSupabaseClient()
       .from('category')

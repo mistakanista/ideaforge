@@ -8,6 +8,7 @@ import type {
   IdeaDetails,
   IdeaListItem,
   NewIdeaInput,
+  ReviewInput,
   UserRole,
 } from '../types';
 
@@ -18,6 +19,11 @@ export interface IdeaRepository {
   getIdeaDetails(ideaId: number, viewer: AppUser): Promise<IdeaDetails | null>;
   /** Stores a new idea in stage SUBMITTED for the given user. */
   createIdea(input: NewIdeaInput, submitter: AppUser): Promise<Idea>;
+  /**
+   * Reviewers only, never for their own idea: moves the idea to the next stage with scores,
+   * or declines it with a reason (US-3).
+   */
+  reviewIdea(ideaId: number, input: ReviewInput, reviewer: AppUser): Promise<void>;
   /** One vote per person and idea: adds the vote or takes it back. */
   toggleVote(ideaId: number, user: AppUser): Promise<void>;
 

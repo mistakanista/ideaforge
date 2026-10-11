@@ -10,6 +10,9 @@ As a reviewer of Tallis & Reeve, I want change the state of the idea, so that it
 - [ ] when moving to another stages the reviewer scores for impact, cost and feasibility from a scale from 1 to 5 (5 is best and least cost), giving a reason is optional
 - [ ] a normal employee must not be able to review an idea
 - [ ] the reviewer must not be able to review his own ideas
-- [ ] the review button is visible for the reviewers on top of the review scores
+- [ ] the review button or link is only visible for the reviewers
+- [ ] on click the form opens, according to the current stage, the next stage or declined is selectable
+- [ ] if the reviewer selects the next stage, he has to score the idea for impact, cost and feasibility, giving a reason is optional
+- [ ] if the reviewer selects the decline, he has to give a reason, the scores are optional
 
-## Status: open
+## Status: in progress

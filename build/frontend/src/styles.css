@@ -162,6 +162,25 @@ textarea { resize: vertical; }
 .th-hint { display: block; font-weight: 400; font-size: 0.75rem; color: var(--muted); }
 .overall { margin-top: 0.5rem; }
 .overall strong { font-size: 1.4rem; }
+/* Review form (US-3) */
+.section-header { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; }
+.review-form { border: 1px solid var(--border); border-radius: 8px; background: var(--cloud); padding: 1rem; margin: 0.5rem 0 1rem; }
+.review-form h5 { margin: 0 0 0.75rem; font-size: 1rem; color: var(--navy); }
+.review-form fieldset { border: none; padding: 0; margin: 0 0 1.1rem; min-width: 0; }
+.review-form legend { font-weight: 600; padding: 0; margin-bottom: 0.35rem; }
+.radio-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.radio-card { border: 1px solid var(--border); border-radius: 8px; padding: 0 1rem; background: var(--white); }
+.radio-card input { accent-color: var(--copper); }
+.review-form .score-input { margin-bottom: 0.75rem; }
+.score-input legend { font-weight: 500; }
+.score-input legend .hint { font-weight: 400; margin-left: 0.25rem; }
+.score-options { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.score-option { position: relative; }
+.score-option input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.score-option span { display: inline-flex; align-items: center; justify-content: center; min-width: var(--tap); min-height: var(--tap); border: 1px solid #9aa3b1; border-radius: 8px; background: var(--white); font-weight: 600; cursor: pointer; }
+.score-option input:checked + span { background: var(--navy); border-color: var(--navy); color: var(--white); }
+.score-option input:checked + span::before { content: "✓"; margin-right: 0.2rem; }
+.score-option input:focus-visible + span { outline: 3px solid var(--copper); outline-offset: 2px; }
 .history { list-style: none; padding: 0; margin: 0; }
 .history li { display: flex; gap: 0.75rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
 .history li:last-child { border-bottom: none; }
