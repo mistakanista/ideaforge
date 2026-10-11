@@ -65,3 +65,17 @@ Builder: Gernot · Checked by: Uli
   - the acceptance criteria was initially not so clear, so no scoring was allowed in case the idea was declined, now scoring is optional
 - What we learned about building with AI: you have to stay concentrated and keep on doing it with small steps
 - Saved version: US-3 add confirmation before declining an idea
+
+## 11.10.2026 · User story 4 : implement votes
+Builder: Gernot · Checked by: Uli
+
+- What we asked for: user story US-4: implement
+- What the AI changed:
+  - created data structure and import for votes
+  - add rules for not voting confidential and own ideas
+- How we checked it:
+  - Supabase: table was added, data was added, new row was added after sending a review
+  - Frontend: checked the votes for own ideas, voted for other ideas, checked confidential ideas that they have no votes
+- What went wrong, and how we fixed it: nothing
+- What we learned about building with AI: you have to stay concentrated and keep on doing it with small steps
+- Saved version: US-4 add vote functionality

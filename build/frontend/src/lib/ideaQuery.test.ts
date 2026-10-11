@@ -21,6 +21,7 @@ function idea(id: number, overrides: Partial<IdeaListItem> = {}): IdeaListItem {
     vote_count: 0,
     voted_by_me: false,
     submitted_by_me: false,
+    last_reviewed_at: null,
     ...overrides,
   };
 }
@@ -98,6 +99,19 @@ describe('sortIdeas', () => {
   });
   it('sorts by votes, newest first on a tie', () => {
     expect(sortIdeas(ideas, 'votes').map((i) => i.idea_id)).toEqual([2, 1, 3]);
+  });
+  it('puts the oldest ideas first', () => {
+    expect(sortIdeas(ideas, 'oldest').map((i) => i.idea_id)).toEqual([1, 2, 3]);
+  });
+  it('puts the last reviewed ideas first, then the never reviewed ones, newest first', () => {
+    const mixed = [
+      idea(1, { last_reviewed_at: '2026-10-01T09:00:00.000Z' }),
+      idea(2),
+      idea(3, { last_reviewed_at: '2026-10-05T09:00:00.000Z' }),
+      idea(4),
+      idea(5, { last_reviewed_at: '2026-09-20T09:00:00.000Z' }),
+    ];
+    expect(sortIdeas(mixed, 'reviewed').map((i) => i.idea_id)).toEqual([3, 1, 5, 4, 2]);
   });
 });
 

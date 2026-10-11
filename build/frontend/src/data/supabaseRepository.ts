@@ -18,8 +18,11 @@ import {
 } from './supabaseMapping';
 import { getSupabaseClient } from './supabaseClient';
 
-// Votes are embedded as rows (user_id only), so count and "voted by me" need no extra request.
-const IDEA_WITH_NAMES = `${IDEA_COLUMNS}, category(name), submitter:app_user!idea_submitter_id_fkey(display_name), vote(user_id)`;
+// Votes (user_id only) and review times are embedded, so vote count, "voted by me" and the
+// last review time need no extra request.
+const IDEA_WITH_NAMES =
+  `${IDEA_COLUMNS}, category(name), submitter:app_user!idea_submitter_id_fkey(display_name), vote(user_id), ` +
+  'idea_transition(created_at)';
 
 /** The signed-in user's own app_user.user_id, which differs from the mock user id. */
 async function ownUserId(): Promise<number | null> {

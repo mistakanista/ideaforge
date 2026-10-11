@@ -74,6 +74,8 @@ export interface IdeaListItem extends Idea {
   voted_by_me: boolean;
   /** The viewer submitted this idea (set by the repository, since mock and database user ids differ). */
   submitted_by_me: boolean;
+  /** Time of the latest review (stage change or decline); null if the idea was never reviewed. */
+  last_reviewed_at: string | null;
 }
 
 /**

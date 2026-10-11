@@ -87,7 +87,9 @@ export function Filters({ filters, categories, counts, submitters, onChange }: F
           <label htmlFor="sort">Sort by</label>
           <select id="sort" value={filters.sort} onChange={(e) => onChange({ sort: e.target.value as SortOrder })}>
             <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
             <option value="votes">Most votes first</option>
+            <option value="reviewed">Last reviewed first</option>
           </select>
         </div>
       </div>

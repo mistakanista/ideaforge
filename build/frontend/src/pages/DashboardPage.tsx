@@ -9,6 +9,7 @@ import {
   DEFAULT_FILTERS,
   filterIdeas,
   paginate,
+  SORT_ORDERS,
   sortIdeas,
   stageCounts,
   submitterOptions,
@@ -31,7 +32,7 @@ function readFilters(params: URLSearchParams): IdeaFilters {
     stage: validStage ? (stage as StageFilter) : null,
     submitterId: Number.isInteger(submitterId) && submitterId > 0 ? submitterId : null,
     mine: params.get('mine') === '1',
-    sort: params.get('sort') === 'votes' ? 'votes' : 'newest',
+    sort: SORT_ORDERS.find((s) => s === params.get('sort')) ?? DEFAULT_FILTERS.sort,
   };
 }
 

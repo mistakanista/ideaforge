@@ -61,6 +61,11 @@ function toListItem(db: Database, idea: Idea, viewer: AppUser): IdeaListItem {
   const submitter = db.users.find((u) => u.user_id === idea.submitter_id);
   const category = db.categories.find((c) => c.category_id === idea.category_id);
   const votes = db.votes.filter((v) => v.idea_id === idea.idea_id);
+  // Reviews are the history entries with a previous stage ("Idea submitted." has none).
+  const reviewTimes = db.history
+    .filter((h) => h.idea_id === idea.idea_id && h.from_stage !== null)
+    .map((h) => h.changed_at)
+    .sort();
   return {
     ...idea,
     category_name: category?.name ?? 'Unknown',
@@ -69,6 +74,7 @@ function toListItem(db: Database, idea: Idea, viewer: AppUser): IdeaListItem {
     vote_count: votes.length,
     voted_by_me: votes.some((v) => v.user_id === viewer.user_id),
     submitted_by_me: idea.submitter_id === viewer.user_id,
+    last_reviewed_at: reviewTimes.length > 0 ? reviewTimes[reviewTimes.length - 1] : null,
   };
 }
 

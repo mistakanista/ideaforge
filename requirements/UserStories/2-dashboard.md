@@ -9,5 +9,6 @@ As an employee, reviewer or admin of Tallis & Reeve, I want to see, browse and f
 - [ ] There is a search functionality to find specific ideas
 - [ ] There is a filter option for votes
 - [ ] There is a filter or search option for users, especially I want to filter my ideas
+- [ ] There is a sorting for most voted, newest, last reviewed and never reviewed or oldest ideas on top
 
 ## Status: review

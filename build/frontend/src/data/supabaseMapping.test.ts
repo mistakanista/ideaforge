@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { RuleViolation } from './repository';
-import { NO_VOTES, toAppError, toIdea, toListItem, toReviewDetails, toVoteInfo, type IdeaRow, type TransitionRow } from './supabaseMapping';
+import { lastReviewedAt, NO_VOTES, toAppError, toIdea, toListItem, toReviewDetails, toVoteInfo, type IdeaRow, type TransitionRow } from './supabaseMapping';
 
 const row: IdeaRow = {
   idea_id: 61,
@@ -25,6 +25,21 @@ describe('toIdea', () => {
     expect(idea).toMatchObject({ idea_id: 61, title: 'Shared car pool', is_confidential: true, current_stage: 'SUBMITTED' });
     expect(idea).not.toHaveProperty('category');
     expect(idea).not.toHaveProperty('office');
+  });
+});
+
+describe('lastReviewedAt', () => {
+  it('takes the latest review time, whatever the order of the rows', () => {
+    const rows = [
+      { created_at: '2026-10-02T08:00:00+00:00' },
+      { created_at: '2026-10-09T14:30:00+00:00' },
+      { created_at: '2026-10-05T10:00:00+00:00' },
+    ];
+    expect(lastReviewedAt(rows)).toBe('2026-10-09T14:30:00+00:00');
+  });
+  it('is null for an idea that was never reviewed', () => {
+    expect(lastReviewedAt([])).toBeNull();
+    expect(lastReviewedAt(undefined)).toBeNull();
   });
 });
 

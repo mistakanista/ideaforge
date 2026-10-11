@@ -26,6 +26,8 @@ export interface IdeaRow {
   submitter?: { display_name: string } | null;
   /** Embedded rows of public.vote (see 20261011135710_vote.sql); RLS returns them only for visible ideas. */
   vote?: { user_id: number }[] | null;
+  /** Embedded times of the idea's rows in public.idea_transition (for "Last reviewed first"). */
+  idea_transition?: { created_at: string }[] | null;
 }
 
 export interface VoteInfo {
@@ -60,6 +62,14 @@ export function toIdea(row: IdeaRow): Idea {
   };
 }
 
+/** Time of the latest review of an idea, or null if it was never reviewed. */
+export function lastReviewedAt(transitions: { created_at: string }[] | null | undefined): string | null {
+  return (transitions ?? []).reduce<string | null>(
+    (latest, t) => (latest === null || new Date(t.created_at) > new Date(latest) ? t.created_at : latest),
+    null,
+  );
+}
+
 /** ownUserId is the viewer's app_user.user_id in the database (not the mock user id). */
 export function toListItem(row: IdeaRow, votes: VoteInfo = NO_VOTES, ownUserId: number | null = null): IdeaListItem {
   return {
@@ -69,6 +79,7 @@ export function toListItem(row: IdeaRow, votes: VoteInfo = NO_VOTES, ownUserId: 
     office: row.office,
     ...votes,
     submitted_by_me: ownUserId !== null && row.submitter_id === ownUserId,
+    last_reviewed_at: lastReviewedAt(row.idea_transition),
   };
 }
 

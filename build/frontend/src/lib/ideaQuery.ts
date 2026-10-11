@@ -2,7 +2,9 @@
 // Kept free of React and storage so they can be unit tested and later reused or moved into SQL.
 import type { AppUser, Idea, IdeaListItem, IdeaStage, OfficeCode } from '../types';
 
-export type SortOrder = 'newest' | 'votes';
+export type SortOrder = 'newest' | 'oldest' | 'votes' | 'reviewed';
+
+export const SORT_ORDERS: readonly SortOrder[] = ['newest', 'oldest', 'votes', 'reviewed'];
 
 /** null = active ideas only (the default list), 'ALL' = every stage. */
 export type StageFilter = IdeaStage | 'ALL' | null;
@@ -86,9 +88,19 @@ function newestFirst(a: IdeaListItem, b: IdeaListItem): number {
   return b.created_at.localeCompare(a.created_at) || b.idea_id - a.idea_id;
 }
 
+/** Latest review first; ideas that were never reviewed follow, newest first. */
+function lastReviewedFirst(a: IdeaListItem, b: IdeaListItem): number {
+  if (a.last_reviewed_at === b.last_reviewed_at) return newestFirst(a, b);
+  if (a.last_reviewed_at === null) return 1;
+  if (b.last_reviewed_at === null) return -1;
+  return b.last_reviewed_at.localeCompare(a.last_reviewed_at);
+}
+
 export function sortIdeas(items: IdeaListItem[], sort: SortOrder): IdeaListItem[] {
   const sorted = [...items];
   if (sort === 'votes') sorted.sort((a, b) => b.vote_count - a.vote_count || newestFirst(a, b));
+  else if (sort === 'reviewed') sorted.sort(lastReviewedFirst);
+  else if (sort === 'oldest') sorted.sort((a, b) => newestFirst(b, a));
   else sorted.sort(newestFirst);
   return sorted;
 }
