@@ -1,31 +1,25 @@
-// Data source for VITE_DATA_SOURCE=supabase (US-1, US-3): categories, ideas, review scores and stage
-// history come from the database, where triggers and row level security enforce the rules
-// (see build/supabase/migrations). Votes, users and category changes have no tables yet; they are
-// still taken from mockRepository, matched by idea_id and title (demo ideas 1-60 have the same ids).
-import type { AppUser, Category, IdeaDetails, IdeaListItem } from '../types';
+// Data source for VITE_DATA_SOURCE=supabase (US-1, US-3, US-4): categories, ideas, review scores,
+// stage history and votes come from the database, where triggers and row level security enforce the
+// rules (see build/supabase/migrations). Users and category changes have no tables in the app yet;
+// they are still taken from mockRepository.
+import type { Category, IdeaDetails } from '../types';
 import { mockRepository } from './mockRepository';
 import type { IdeaRepository } from './repository';
 import {
   IDEA_COLUMNS,
-  NO_VOTES,
   TRANSITION_COLUMNS,
   toAppError,
   toIdea,
   toListItem,
   toReviewDetails,
+  toVoteInfo,
   type IdeaRow,
   type TransitionRow,
-  type VoteInfo,
 } from './supabaseMapping';
 import { getSupabaseClient } from './supabaseClient';
 
-const IDEA_WITH_NAMES = `${IDEA_COLUMNS}, category(name), submitter:app_user!idea_submitter_id_fkey(display_name)`;
-
-/** Mock votes per idea_id; only used when the mock idea has the same title (same demo idea). */
-async function mockVotes(viewer: AppUser): Promise<Map<number, IdeaListItem>> {
-  const items = await mockRepository.listIdeas(viewer);
-  return new Map(items.map((item) => [item.idea_id, item]));
-}
+// Votes are embedded as rows (user_id only), so count and "voted by me" need no extra request.
+const IDEA_WITH_NAMES = `${IDEA_COLUMNS}, category(name), submitter:app_user!idea_submitter_id_fkey(display_name), vote(user_id)`;
 
 /** The signed-in user's own app_user.user_id, which differs from the mock user id. */
 async function ownUserId(): Promise<number | null> {
@@ -41,24 +35,18 @@ async function ownUserId(): Promise<number | null> {
   return data?.user_id ?? null;
 }
 
-function votesFor(row: IdeaRow, mock: Map<number, IdeaListItem>): VoteInfo {
-  const item = mock.get(row.idea_id);
-  return item && item.title === row.title ? { vote_count: item.vote_count, voted_by_me: item.voted_by_me } : NO_VOTES;
-}
-
 export const supabaseRepository: IdeaRepository = {
-  async listIdeas(viewer) {
+  async listIdeas() {
     // Row level security returns only the ideas the signed-in user may see (confidential rule).
     const [{ data, error }, ownId] = await Promise.all([
       getSupabaseClient().from('idea').select(IDEA_WITH_NAMES).order('created_at', { ascending: false }).returns<IdeaRow[]>(),
       ownUserId(),
     ]);
     if (error) throw toAppError(error);
-    const mock = await mockVotes(viewer);
-    return data.map((row) => toListItem(row, votesFor(row, mock), ownId));
+    return data.map((row) => toListItem(row, toVoteInfo(row.vote, ownId), ownId));
   },
 
-  async getIdeaDetails(ideaId, viewer): Promise<IdeaDetails | null> {
+  async getIdeaDetails(ideaId): Promise<IdeaDetails | null> {
     const client = getSupabaseClient();
     const [{ data, error }, transitions, ownId] = await Promise.all([
       client.from('idea').select(IDEA_WITH_NAMES).eq('idea_id', ideaId).maybeSingle<IdeaRow>(),
@@ -69,10 +57,7 @@ export const supabaseRepository: IdeaRepository = {
     if (error) throw toAppError(error);
     if (transitions.error) throw toAppError(transitions.error);
     if (!data) return null; // not found, or not visible for the viewer (confidential)
-    const row = data;
-    const mock = await mockRepository.getIdeaDetails(ideaId, viewer);
-    const sameIdea = mock !== null && mock.idea.title === row.title;
-    const idea = toListItem(row, sameIdea ? { vote_count: mock.idea.vote_count, voted_by_me: mock.idea.voted_by_me } : NO_VOTES, ownId);
+    const idea = toListItem(data, toVoteInfo(data.vote, ownId), ownId);
     return { idea, ...toReviewDetails(idea, transitions.data) };
   },
 
@@ -120,8 +105,21 @@ export const supabaseRepository: IdeaRepository = {
     return data;
   },
 
-  // Not in the database yet: votes (US-4), users and roles in the app (US-5), category changes (US-5).
-  toggleVote: (ideaId, user) => mockRepository.toggleVote(ideaId, user),
+  async toggleVote(ideaId) {
+    // Take the vote back if there is one (RLS deletes only the viewer's own vote), otherwise vote.
+    // The voter and the time are set by the database (trigger vote_check), which also rejects votes
+    // on the own idea and on confidential ideas.
+    const client = getSupabaseClient();
+    const ownId = await ownUserId();
+    if (ownId === null) throw toAppError({ code: '42501', message: 'not signed in' });
+    const removed = await client.from('vote').delete().eq('idea_id', ideaId).eq('user_id', ownId).select('idea_id');
+    if (removed.error) throw toAppError(removed.error);
+    if (removed.data.length > 0) return;
+    const { error } = await client.from('vote').insert({ idea_id: ideaId });
+    if (error) throw toAppError(error);
+  },
+
+  // Not in the database yet: users and roles in the app (US-5), category changes (US-5).
   listUsers: () => mockRepository.listUsers(),
   updateUserRole: (userId, role, actor) => mockRepository.updateUserRole(userId, role, actor),
   saveCategory: (input, actor) => mockRepository.saveCategory(input, actor),

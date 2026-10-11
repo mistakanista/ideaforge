@@ -149,6 +149,7 @@ textarea { resize: vertical; }
 .vote.voted { background: var(--copper); color: var(--white); }
 .vote.voted:hover { background: var(--copper-dark); color: var(--white); }
 .vote-label { font-weight: 400; font-size: 0.85rem; }
+.vote-count { display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; min-width: 5.5rem; padding: 0 0.5rem; font-weight: 600; color: var(--navy); }
 
 /* Details */
 .details { border-top: 1px solid var(--border); margin-top: 0.5rem; padding-top: 0.25rem; display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 0 2rem; }

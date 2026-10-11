@@ -57,6 +57,8 @@ export function DashboardPage() {
   const [ideas, setIdeas] = useState<IdeaListItem[] | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
+  const [voting, setVoting] = useState<number | null>(null);
+  const [voteError, setVoteError] = useState<{ ideaId: number; message: string } | null>(null);
 
   const filters = readFilters(params);
   const sizeParam = Number(params.get('size'));
@@ -101,9 +103,17 @@ export function DashboardPage() {
   }
 
   async function toggleVote(ideaId: number) {
-    if (!user) return;
-    await repository.toggleVote(ideaId, user);
-    await loadIdeas();
+    if (!user || voting !== null) return; // one vote at a time, so a double click cannot vote twice
+    setVoting(ideaId);
+    setVoteError(null);
+    try {
+      await repository.toggleVote(ideaId, user);
+    } catch (error) {
+      setVoteError({ ideaId, message: error instanceof Error ? error.message : 'Your vote could not be saved.' });
+    } finally {
+      await loadIdeas();
+      setVoting(null);
+    }
   }
 
   return (
@@ -145,6 +155,8 @@ export function DashboardPage() {
               expanded={expanded.has(idea.idea_id)}
               onToggleDetails={() => toggleDetails(idea.idea_id)}
               onToggleVote={() => void toggleVote(idea.idea_id)}
+              voting={voting === idea.idea_id}
+              voteError={voteError?.ideaId === idea.idea_id ? voteError.message : null}
               onReviewed={() => void loadIdeas()}
             />
           ))}

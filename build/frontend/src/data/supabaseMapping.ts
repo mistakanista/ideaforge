@@ -24,15 +24,25 @@ export interface IdeaRow {
   created_at: string;
   category?: { name: string } | null;
   submitter?: { display_name: string } | null;
+  /** Embedded rows of public.vote (see 20261011135710_vote.sql); RLS returns them only for visible ideas. */
+  vote?: { user_id: number }[] | null;
 }
 
-/** Votes still come from the mock data until the vote table exists (US-4). */
 export interface VoteInfo {
   vote_count: number;
   voted_by_me: boolean;
 }
 
 export const NO_VOTES: VoteInfo = { vote_count: 0, voted_by_me: false };
+
+/** Vote count of an idea and whether the viewer (own app_user.user_id) voted for it. */
+export function toVoteInfo(votes: { user_id: number }[] | null | undefined, ownUserId: number | null): VoteInfo {
+  const rows = votes ?? [];
+  return {
+    vote_count: rows.length,
+    voted_by_me: ownUserId !== null && rows.some((v) => v.user_id === ownUserId),
+  };
+}
 
 export function toIdea(row: IdeaRow): Idea {
   return {

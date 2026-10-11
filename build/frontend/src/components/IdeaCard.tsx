@@ -1,4 +1,5 @@
 import { formatDate, OFFICE_LABELS } from '../config';
+import { canVote, showsVotes } from '../lib/voteRules';
 import type { IdeaListItem } from '../types';
 import { IdeaDetails } from './IdeaDetails';
 import { ConfidentialBadge, StageBadge } from './StageBadge';
@@ -8,11 +9,15 @@ interface IdeaCardProps {
   expanded: boolean;
   onToggleDetails: () => void;
   onToggleVote: () => void;
+  /** A vote of the viewer for this idea is being saved. */
+  voting?: boolean;
+  /** Message of a vote that could not be saved. */
+  voteError?: string | null;
   /** Called after a reviewer saved a review, so the list can show the new stage. */
   onReviewed?: () => void;
 }
 
-export function IdeaCard({ idea, expanded, onToggleDetails, onToggleVote, onReviewed }: IdeaCardProps) {
+export function IdeaCard({ idea, expanded, onToggleDetails, onToggleVote, voting = false, voteError = null, onReviewed }: IdeaCardProps) {
   const detailsId = `idea-details-${idea.idea_id}`;
   return (
     <article className={`card idea-card${expanded ? ' expanded' : ''}`} aria-labelledby={`idea-title-${idea.idea_id}`}>
@@ -38,19 +43,35 @@ export function IdeaCard({ idea, expanded, onToggleDetails, onToggleVote, onRevi
           <button type="button" className="btn btn-secondary" aria-expanded={expanded} aria-controls={detailsId} onClick={onToggleDetails}>
             {expanded ? 'Hide details' : 'Details'}
           </button>
-          <button
-            type="button"
-            className={`btn vote${idea.voted_by_me ? ' voted' : ''}`}
-            aria-pressed={idea.voted_by_me}
-            onClick={onToggleVote}
-            title={idea.voted_by_me ? 'Take back your vote' : 'Vote for this idea'}
-          >
-            <span aria-hidden="true">↑</span> {idea.vote_count}
-            <span className="visually-hidden"> votes. {idea.voted_by_me ? 'You voted.' : 'Vote for this idea.'}</span>
-            <span className="vote-label" aria-hidden="true">{idea.voted_by_me ? 'Voted' : 'Vote'}</span>
-          </button>
+          {/* Confidential ideas get no votes (US-4): no button and no count. */}
+          {canVote(idea) ? (
+            <button
+              type="button"
+              className={`btn vote${idea.voted_by_me ? ' voted' : ''}`}
+              aria-pressed={idea.voted_by_me}
+              disabled={voting}
+              onClick={onToggleVote}
+              title={idea.voted_by_me ? 'Take back your vote' : 'Vote for this idea'}
+            >
+              <span aria-hidden="true">↑</span> {idea.vote_count}
+              <span className="visually-hidden"> votes. {idea.voted_by_me ? 'You voted.' : 'Vote for this idea.'}</span>
+              <span className="vote-label" aria-hidden="true">{idea.voted_by_me ? 'Voted' : 'Vote'}</span>
+            </button>
+          ) : (
+            showsVotes(idea) && (
+              // Own idea: the votes are shown, but the submitter cannot vote.
+              <span className="vote-count" title="You cannot vote for your own idea">
+                <span aria-hidden="true">↑</span> {idea.vote_count} {idea.vote_count === 1 ? 'vote' : 'votes'}
+              </span>
+            )
+          )}
         </div>
       </div>
+      {voteError && (
+        <p className="form-error" role="alert">
+          {voteError}
+        </p>
+      )}
 
       {expanded && (
         <div id={detailsId}>

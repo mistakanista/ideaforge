@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { RuleViolation } from './repository';
-import { NO_VOTES, toAppError, toIdea, toListItem, toReviewDetails, type IdeaRow, type TransitionRow } from './supabaseMapping';
+import { NO_VOTES, toAppError, toIdea, toListItem, toReviewDetails, toVoteInfo, type IdeaRow, type TransitionRow } from './supabaseMapping';
 
 const row: IdeaRow = {
   idea_id: 61,
@@ -25,6 +25,19 @@ describe('toIdea', () => {
     expect(idea).toMatchObject({ idea_id: 61, title: 'Shared car pool', is_confidential: true, current_stage: 'SUBMITTED' });
     expect(idea).not.toHaveProperty('category');
     expect(idea).not.toHaveProperty('office');
+  });
+});
+
+describe('toVoteInfo', () => {
+  it('counts the embedded votes and finds the own vote by database user id', () => {
+    const votes = [{ user_id: 3 }, { user_id: 9 }, { user_id: 12 }];
+    expect(toVoteInfo(votes, 9)).toEqual({ vote_count: 3, voted_by_me: true });
+    expect(toVoteInfo(votes, 7)).toEqual({ vote_count: 3, voted_by_me: false });
+    expect(toVoteInfo(votes, null)).toEqual({ vote_count: 3, voted_by_me: false });
+  });
+  it('has no votes when the rows are missing', () => {
+    expect(toVoteInfo(undefined, 9)).toEqual(NO_VOTES);
+    expect(toVoteInfo(null, 9)).toEqual(NO_VOTES);
   });
 });
 

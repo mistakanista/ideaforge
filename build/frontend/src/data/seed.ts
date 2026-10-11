@@ -238,10 +238,13 @@ export function createSeed(): Database {
       }
     }
 
-    // Votes: older and more advanced ideas collect more votes; only from people who can see the idea.
+    // Votes: older and more advanced ideas collect more votes; only from people who can see the idea,
+    // never from the submitter and never on confidential ideas (US-4). random() is still called for
+    // every user, so the rest of the demo data stays the same.
     const voteChance = 0.15 + 0.12 * steps + 0.25 * age;
     for (const user of users) {
-      if (canSeeIdea(idea, user) && random() < voteChance) {
+      const allowed = !idea.is_confidential && user.user_id !== idea.submitter_id;
+      if (canSeeIdea(idea, user) && random() < voteChance && allowed) {
         votes.push({ idea_id, user_id: user.user_id, created_at: new Date(created.getTime() + day).toISOString() });
       }
     }

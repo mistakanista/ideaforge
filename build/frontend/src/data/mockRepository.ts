@@ -3,6 +3,7 @@
 import { SCORING_CRITERIA } from '../config';
 import { canSeeIdea } from '../lib/ideaQuery';
 import { canReview, nextStage } from '../lib/reviewRules';
+import { voteRuleViolation } from '../lib/voteRules';
 import { upsertUserByEmail, type SessionProfile } from '../lib/sessionUser';
 import type { AppUser, Category, Idea, IdeaDetails, IdeaListItem, ReviewerScorecard } from '../types';
 import { RuleViolation, type IdeaRepository } from './repository';
@@ -188,8 +189,14 @@ export const mockRepository: IdeaRepository = {
     const idea = db.ideas.find((i) => i.idea_id === ideaId);
     if (!idea || !canSeeIdea(idea, user)) throw new RuleViolation('This idea is not available.');
     const existing = db.votes.findIndex((v) => v.idea_id === ideaId && v.user_id === user.user_id);
-    if (existing >= 0) db.votes.splice(existing, 1);
-    else db.votes.push({ idea_id: ideaId, user_id: user.user_id, created_at: new Date().toISOString() });
+    if (existing >= 0) {
+      db.votes.splice(existing, 1);
+    } else {
+      // Same rules as the database: no vote for the own idea, no votes on confidential ideas.
+      const violation = voteRuleViolation({ ...idea, submitted_by_me: idea.submitter_id === user.user_id });
+      if (violation) throw new RuleViolation(violation);
+      db.votes.push({ idea_id: ideaId, user_id: user.user_id, created_at: new Date().toISOString() });
+    }
     save(db);
   },
 
