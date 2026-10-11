@@ -3,7 +3,7 @@
 Simple overview of the tables that exist in Supabase today (schema `public`, plus the link to `auth.users`).
 Update this diagram after each Supabase migration.
 
-- Last update: 2026-10-11, after migration `20261011104615_idea_transition.sql`
+- Last update: 2026-10-11, after migration `20261011113410_idea_transition_decline_scores.sql`
 - Source: `build/supabase/migrations/`
 - Planned full model: `design/DataModel/V2-StammdatenIntegriert/`
 
@@ -67,10 +67,10 @@ erDiagram
         idea_stage from_stage
         idea_stage to_stage
         bigint changed_by FK "reviewer"
-        text reason "required when declined"
-        smallint score_impact "1-5, NULL when declined"
-        smallint score_cost "1-5, NULL when declined"
-        smallint score_feasibility "1-5, NULL when declined"
+        text reason "required when declined, optional otherwise"
+        smallint score_impact "1-5, optional when declined"
+        smallint score_cost "1-5, optional when declined"
+        smallint score_feasibility "1-5, optional when declined"
         timestamptz created_at
     }
 ```

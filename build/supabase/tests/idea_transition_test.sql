@@ -2,7 +2,7 @@
 -- Everything runs in one transaction and is rolled back at the end.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(36);
+select plan(39);
 
 -- Start from empty tables, independent of seed.sql (rolled back at the end)
 delete from public.idea_transition;
@@ -22,11 +22,12 @@ update public.app_user set role = 'REVIEWER',
   role_changed_by = (select user_id from public.app_user where email = 'priya.shah@example.com')
   where email in ('ruth.evans@example.com', 'tom.hallworth@example.com');
 
--- Ideas (created as the database owner): two by Sam (one confidential), one by Tom
+-- Ideas (created as the database owner): three by Sam (one confidential), one by Tom
 insert into public.idea (title, problem, solution, expected_impact, category_id, submitter_id, is_confidential) values
   ('Shared car pool', 'p', 's', 'i', 1, (select user_id from public.app_user where email = 'sam.taylor@example.com'), false),
   ('Salary bands', 'p', 's', 'i', 4, (select user_id from public.app_user where email = 'sam.taylor@example.com'), true),
-  ('Bike racks', 'p', 's', 'i', 3, (select user_id from public.app_user where email = 'tom.hallworth@example.com'), false);
+  ('Bike racks', 'p', 's', 'i', 3, (select user_id from public.app_user where email = 'tom.hallworth@example.com'), false),
+  ('Paperless office', 'p', 's', 'i', 2, (select user_id from public.app_user where email = 'sam.taylor@example.com'), false);
 
 -- Transition rules
 select ok(public.is_valid_transition('SUBMITTED', 'UNDER_REVIEW'), 'SUBMITTED -> UNDER_REVIEW is allowed');
@@ -52,6 +53,7 @@ select is((select from_stage from public.idea_transition), 'SUBMITTED'::public.i
 select is((select changed_by from public.idea_transition),
   (select user_id from public.app_user where email = 'ruth.evans@example.com'), 'the reviewer is always the signed-in user');
 select ok((select created_at > '2020-01-01' from public.idea_transition), 'created_at is set by the database');
+select is((select reason from public.idea_transition), 'Good start', 'a move can have a reason besides the scores');
 
 -- Stages
 select throws_ok(
@@ -90,8 +92,8 @@ select throws_ok(
   '23514', null, 'a blank reason is not a reason');
 select throws_ok(
   $$ insert into public.idea_transition (idea_id, to_stage, reason, score_impact, score_cost, score_feasibility)
-     values ((select idea_id from public.idea where title = 'Shared car pool'), 'DECLINED', 'Too expensive', 1, 1, 1) $$,
-  '23514', null, 'a decline has no scores');
+     values ((select idea_id from public.idea where title = 'Shared car pool'), 'DECLINED', 'Too expensive', 1, 1, null) $$,
+  '23514', null, 'a decline has all three scores or none');
 select is((select current_stage from public.idea where title = 'Shared car pool'), 'UNDER_REVIEW'::public.idea_stage,
   'rejected moves do not change the stage');
 
@@ -122,6 +124,15 @@ select throws_ok(
   $$ insert into public.idea_transition (idea_id, to_stage, score_impact, score_cost, score_feasibility)
      values ((select idea_id from public.idea where title = 'Salary bands'), 'UNDER_REVIEW', 3, 3, 3) $$,
   'An idea in stage DECLINED cannot be moved to UNDER_REVIEW', 'a declined idea is final');
+select lives_ok(
+  $$ insert into public.idea_transition (idea_id, to_stage, reason, score_impact, score_cost, score_feasibility)
+     values ((select idea_id from public.idea where title = 'Paperless office'), 'DECLINED', 'Too expensive for now', 3, 1, 2) $$,
+  'a reviewer can decline an idea with a reason and scores');
+select results_eq(
+  $$ select score_impact, score_cost, score_feasibility from public.idea_transition
+     where idea_id = (select idea_id from public.idea where title = 'Paperless office') $$,
+  $$ values (3::smallint, 1::smallint, 2::smallint) $$,
+  'the scores of a decline are stored');
 
 -- Who may move ideas
 select set_config('request.jwt.claims', '{"sub": "c0000000-0000-0000-0000-000000000003", "role": "authenticated"}', true);
@@ -150,10 +161,10 @@ select throws_ok(
   'Only reviewers can move ideas', 'admins cannot move ideas');
 
 -- Visibility (the history of the confidential idea "Salary bands" has one row)
-select is((select count(*) from public.idea_transition), 3::bigint,
+select is((select count(*) from public.idea_transition), 4::bigint,
   'admins see the history of normal ideas but not of confidential ones');
 select set_config('request.jwt.claims', '{"sub": "c0000000-0000-0000-0000-000000000003", "role": "authenticated"}', true);
-select is((select count(*) from public.idea_transition), 4::bigint, 'reviewers see the history of all ideas');
+select is((select count(*) from public.idea_transition), 5::bigint, 'reviewers see the history of all ideas');
 
 -- Anonymous visitors
 reset role;
