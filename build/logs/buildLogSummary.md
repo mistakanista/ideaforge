@@ -69,7 +69,7 @@ Builder: Gernot · Checked by: Uli
 ## 11.10.2026 · User story 4 : implement votes
 Builder: Gernot · Checked by: Uli
 
-- What we asked for: user story US-4: implement
+- What we asked for: user story US-4: implement votes
 - What the AI changed:
   - created data structure and import for votes
   - add rules for not voting confidential and own ideas
@@ -79,3 +79,18 @@ Builder: Gernot · Checked by: Uli
 - What went wrong, and how we fixed it: nothing
 - What we learned about building with AI: you have to stay concentrated and keep on doing it with small steps
 - Saved version: US-4 add vote functionality
+
+## 12.10.2026 · User story 5 : admin features
+Builder: Gernot · Checked by: Uli
+
+- What we asked for: user story US-5: implement admin features
+- What the AI changed:
+  - list users from supabase
+  - admins can edit user roles
+  - load and edit categories from supabase
+- How we checked it:
+  - Supabase: new category row was added
+  - Frontend: changed user role to review, took away the admin role, set category to inactive
+- What went wrong, and how we fixed it: nothing
+- What we learned about building with AI: also Sonnet 5.5 is very reliable
+- Saved version: US-5 update summary

@@ -10,4 +10,4 @@ As an admin of Tallis & Reeve, I need a list of all users and categories of the 
 - [ ] The category list shows all categories with their name and description
 - [ ] A category can be edited, added or marked as inactive
 
-## Status: open
+## Status: review
