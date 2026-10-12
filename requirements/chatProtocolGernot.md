@@ -154,3 +154,15 @@ shall their be a possibility for the users to switch the office?
 
 ## Answer 23
 Honestly, I haven't thought about domain verification in detail. What would you suggest? I'm happy for your team to decide on the technical solution, as long as it ensures only our colleagues at Tallis & Reeve can log in. Just make a note of what you decide!
+
+## Prompt 24
+Hello Dev, I heard there is a new requirement, there should be the possibility of anonymous ideas. Can you please tell me a little more about the use case?
+
+## Answer 24
+Honestly, I haven't thought about how the mechanics of that should work in detail. Legal just asked that staff have the option to submit anonymously so junior colleagues don't feel nervous challenging existing processes, provided our panel can still message or ask questions to the submitter without revealing who they are. What would you suggest? I'm happy for your team to decide how to design that, as long as the submitter's identity stays hidden and they still get notified when their idea changes stage—just make a note of what you decide!
+
+## Prompt 25
+is it a must have, a should have or a could have feature?
+
+## Answer 25
+The core pipeline capabilities—submitting, browsing, voting, scoring, stage transitions with visible feedback, and the reporting dashboard—are absolute Must Haves for us. Features like stage change notifications and comments sit in our Should Have category, while duplicate checking and the leaderboard are Could Haves. Ultimately, if you're using MoSCoW to prioritize, I'd fight hardest for keeping the core pipeline transparent, as colleagues need to see their ideas going somewhere!

@@ -24,6 +24,8 @@ We will try to follow the github and supabase path, as a fallback we will go for
 - US-8 Notify submitters when their idea changes stage
 - US-9 The app should work with Google Accounts 
 - US-10 The app should be open for everyone and completely free to use
+- US-11 Anonymous ideas should be possible
+
 ### could have
 - Show ideas in the same category while someone is submitting, so they can spot duplicates
 - A leaderboard of the most-backed ideas this quarter
