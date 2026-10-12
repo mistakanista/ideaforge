@@ -3,7 +3,7 @@
 Simple overview of the tables that exist in Supabase today (schema `public`, plus the link to `auth.users`).
 Update this diagram after each Supabase migration.
 
-- Last update: 2026-10-11, after migration `20261011141245_vote_no_confidential.sql`
+- Last update: 2026-10-12, after migration `20261012193813_category_admin_write.sql` (no new tables or columns; only admins can write `category`)
 - Source: `build/supabase/migrations/`
 - Planned full model: `design/DataModel/V2-StammdatenIntegriert/`
 
@@ -46,8 +46,8 @@ erDiagram
         smallint category_id PK
         text name UK
         text description
-        smallint sort_order
-        boolean is_active
+        smallint sort_order "set by trigger"
+        boolean is_active "inactive = not selectable, never deleted"
     }
     IDEA {
         bigint idea_id PK
