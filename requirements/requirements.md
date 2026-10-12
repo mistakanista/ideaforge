@@ -16,10 +16,10 @@ We will try to follow the github and supabase path, as a fallback we will go for
 - US-3 Only reviewers can move ideas between stages, and the submitter can see why, admins do not score and move ideas,
 - US-3 impact, cost and feasibility are expected to be scored from 0 to 5, where cost 5 means least costs
 - US-4 There is only one vote per idea and person
-- US-5 can change category and make users to reviewers
-- US-6 A declined idea can be submitted once more (second chance) with improvements
 
 ### should have
+- US-5 an admin can change category and make users to reviewers
+- US-6 A declined idea can be submitted once more (second chance) with improvements
 - US-7 Comments on ideas
 - US-8 Notify submitters when their idea changes stage
 - US-9 The app should work with Google Accounts 

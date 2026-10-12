@@ -6,12 +6,19 @@ import { createContext, useCallback, useContext, useEffect, useState, type React
 import type { Session } from '@supabase/supabase-js';
 import { repository } from '../data';
 import { syncMockUser } from '../data/mockRepository';
+import { toAppUser, type UserRow } from '../data/supabaseMapping';
 import { getSupabaseClient } from '../data/supabaseClient';
 import type { SessionProfile } from '../lib/sessionUser';
 import type { AppUser } from '../types';
 
 export type AuthMode = 'mock' | 'supabase';
 export const AUTH_MODE: AuthMode = import.meta.env.VITE_AUTH_SOURCE === 'supabase' ? 'supabase' : 'mock';
+
+/** True when users and ideas come from the database, so ids are the real app_user ids. */
+const DATA_FROM_DATABASE = import.meta.env.VITE_DATA_SOURCE === 'supabase';
+
+/** The own app_user row as loaded after sign-in. */
+type SessionRow = UserRow & SessionProfile & { must_change_password: boolean };
 
 /** loading: session not known yet; signedOut: login page; signedIn: user is set. */
 export type AuthStatus = 'loading' | 'signedOut' | 'signedIn';
@@ -124,9 +131,9 @@ function SupabaseUserProvider({ children }: { children: ReactNode }) {
     async (id: string, isCancelled: () => boolean = () => false) => {
       const { data, error } = await supabase
         .from('app_user')
-        .select('email, display_name, office, role, is_active, must_change_password')
+        .select('user_id, email, display_name, office, role, role_changed_by, role_changed_at, is_active, must_change_password')
         .eq('auth_user_id', id)
-        .maybeSingle<SessionProfile & { must_change_password: boolean }>();
+        .maybeSingle<SessionRow>();
       if (isCancelled()) return;
       if (error || !data || !data.is_active) {
         setNotice(
@@ -139,7 +146,8 @@ function SupabaseUserProvider({ children }: { children: ReactNode }) {
       }
       setNotice(null);
       setMustChangePassword(data.must_change_password);
-      setUser(syncMockUser(data));
+      // With database ideas the app works with the real app_user ids; otherwise the mock user is matched by email.
+      setUser(DATA_FROM_DATABASE ? toAppUser(data) : syncMockUser(data));
       await refreshUsers();
     },
     [supabase, refreshUsers],

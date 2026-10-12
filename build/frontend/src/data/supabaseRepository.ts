@@ -1,20 +1,23 @@
 // Data source for VITE_DATA_SOURCE=supabase (US-1, US-3, US-4): categories, ideas, review scores,
 // stage history and votes come from the database, where triggers and row level security enforce the
-// rules (see build/supabase/migrations). Users and category changes have no tables in the app yet;
-// they are still taken from mockRepository.
-import type { Category, IdeaDetails } from '../types';
+// rules (see build/supabase/migrations). The user list comes from app_user (US-5); role changes
+// and category changes are still taken from mockRepository.
+import type { AppUser, Category, IdeaDetails } from '../types';
 import { mockRepository } from './mockRepository';
 import type { IdeaRepository } from './repository';
 import {
   IDEA_COLUMNS,
   TRANSITION_COLUMNS,
+  USER_COLUMNS,
   toAppError,
   toIdea,
   toListItem,
   toReviewDetails,
   toVoteInfo,
+  toAppUser,
   type IdeaRow,
   type TransitionRow,
+  type UserRow,
 } from './supabaseMapping';
 import { getSupabaseClient } from './supabaseClient';
 
@@ -122,8 +125,17 @@ export const supabaseRepository: IdeaRepository = {
     if (error) throw toAppError(error);
   },
 
-  // Not in the database yet: users and roles in the app (US-5), category changes (US-5).
-  listUsers: () => mockRepository.listUsers(),
+  async listUsers(): Promise<AppUser[]> {
+    const { data, error } = await getSupabaseClient()
+      .from('app_user')
+      .select(USER_COLUMNS)
+      .order('display_name')
+      .returns<UserRow[]>();
+    if (error) throw toAppError(error);
+    return data.map(toAppUser);
+  },
+
+  // Not in the database yet (US-5, next steps): role changes and category changes.
   updateUserRole: (userId, role, actor) => mockRepository.updateUserRole(userId, role, actor),
   saveCategory: (input, actor) => mockRepository.saveCategory(input, actor),
   resetDemoData: () => mockRepository.resetDemoData(),

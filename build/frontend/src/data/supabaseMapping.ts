@@ -1,12 +1,25 @@
 // Pure helpers for supabaseRepository: database rows -> app types, database errors -> messages.
 // Kept free of the Supabase client so they can be unit tested.
 import { SCORING_CRITERIA } from '../config';
-import type { Idea, IdeaListItem, IdeaStage, OfficeCode, ReviewerScorecard, StageHistoryEntry } from '../types';
+import type { AppUser, Idea, IdeaListItem, IdeaStage, OfficeCode, ReviewerScorecard, StageHistoryEntry } from '../types';
 import { RuleViolation } from './repository';
 
 /** Columns of public.idea read by the app (see supabase/migrations/20261010192020_idea.sql). */
 export const IDEA_COLUMNS =
   'idea_id, title, problem, solution, expected_impact, category_id, submitter_id, office, is_confidential, current_stage, resubmission_of, created_at';
+
+/** Columns of public.app_user read by the admin user list (no auth_user_id, no password data). */
+export const USER_COLUMNS = 'user_id, email, display_name, office, role, role_changed_by, role_changed_at, is_active';
+
+/** A public.app_user row; office is NULL until the user has chosen one (first login). */
+export type UserRow = Omit<AppUser, 'office'> & { office: OfficeCode | null };
+
+/** Office shown until the user chooses one (same fallback as lib/sessionUser.ts). */
+const FALLBACK_OFFICE: OfficeCode = 'BRISTOL';
+
+export function toAppUser(row: UserRow): AppUser {
+  return { ...row, office: row.office ?? FALLBACK_OFFICE };
+}
 
 /** An idea row with the joined category name and submitter name. */
 export interface IdeaRow {

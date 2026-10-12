@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { RuleViolation } from './repository';
-import { lastReviewedAt, NO_VOTES, toAppError, toIdea, toListItem, toReviewDetails, toVoteInfo, type IdeaRow, type TransitionRow } from './supabaseMapping';
+import { lastReviewedAt, NO_VOTES, toAppError, toIdea, toListItem, toReviewDetails, toVoteInfo, toAppUser, type IdeaRow, type TransitionRow } from './supabaseMapping';
 
 const row: IdeaRow = {
   idea_id: 61,
@@ -153,5 +153,24 @@ describe('toReviewDetails', () => {
     expect(scorecards).toEqual([]);
     expect(history).toHaveLength(1);
     expect(history[0].to_stage).toBe('SUBMITTED');
+  });
+});
+
+describe('toAppUser', () => {
+  const user = {
+    user_id: 14,
+    email: 'ruth.evans@tallis.uk',
+    display_name: 'Ruth Evans',
+    office: 'LEEDS' as const,
+    role: 'REVIEWER' as const,
+    role_changed_by: 1,
+    role_changed_at: '2026-10-10T09:00:00+00:00',
+    is_active: true,
+  };
+  it('keeps the database id and all columns', () => {
+    expect(toAppUser(user)).toEqual(user);
+  });
+  it('shows a fallback office while the user has not chosen one', () => {
+    expect(toAppUser({ ...user, office: null }).office).toBe('BRISTOL');
   });
 });
