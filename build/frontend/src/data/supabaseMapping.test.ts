@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { RuleViolation } from './repository';
-import { lastReviewedAt, NO_VOTES, toAppError, toIdea, toListItem, toReviewDetails, toVoteInfo, toAppUser, roleUpdateError, type IdeaRow, type TransitionRow } from './supabaseMapping';
+import { lastReviewedAt, NO_VOTES, toAppError, toIdea, toListItem, toReviewDetails, toVoteInfo, toAppUser, roleUpdateError, toCategory, toCategoryError, type IdeaRow, type TransitionRow } from './supabaseMapping';
 
 const row: IdeaRow = {
   idea_id: 61,
@@ -182,5 +182,20 @@ describe('roleUpdateError', () => {
   it('rejects an update that changed no row (row level security or unknown user)', () => {
     expect(roleUpdateError([])).toBeInstanceOf(RuleViolation);
     expect(roleUpdateError(null)).toBeInstanceOf(RuleViolation);
+  });
+});
+
+describe('categories', () => {
+  it('shows an empty description as an empty text', () => {
+    const category = toCategory({ category_id: 1, name: 'Health', description: null, sort_order: 5, is_active: true });
+    expect(category.description).toBe('');
+    expect(category.name).toBe('Health');
+  });
+  it('explains a duplicate name and a blank name', () => {
+    expect(toCategoryError({ code: '23505', message: 'unique' }).message).toBe('A category with this name already exists.');
+    expect(toCategoryError({ code: '23514', message: 'check' }).message).toBe('Please enter a name.');
+  });
+  it('falls back to the general messages', () => {
+    expect(toCategoryError({ code: '42501', message: 'denied' }).message).toBe('You are not allowed to do this.');
   });
 });

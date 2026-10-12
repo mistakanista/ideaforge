@@ -1,7 +1,7 @@
 // Pure helpers for supabaseRepository: database rows -> app types, database errors -> messages.
 // Kept free of the Supabase client so they can be unit tested.
 import { SCORING_CRITERIA } from '../config';
-import type { AppUser, Idea, IdeaListItem, IdeaStage, OfficeCode, ReviewerScorecard, StageHistoryEntry } from '../types';
+import type { AppUser, Category, Idea, IdeaListItem, IdeaStage, OfficeCode, ReviewerScorecard, StageHistoryEntry } from '../types';
 import { RuleViolation } from './repository';
 
 /** Columns of public.idea read by the app (see supabase/migrations/20261010192020_idea.sql). */
@@ -24,6 +24,16 @@ export function toAppUser(row: UserRow): AppUser {
 /** Row level security hides rows silently, so an update that returns no row was not allowed (or the id is unknown). */
 export function roleUpdateError(updatedRows: unknown[] | null): RuleViolation | null {
   return updatedRows && updatedRows.length > 0 ? null : new RuleViolation('You are not allowed to change this role.');
+}
+
+/** Columns of public.category read by the app (see supabase/migrations/20261010192020_idea.sql). */
+export const CATEGORY_COLUMNS = 'category_id, name, description, sort_order, is_active';
+
+/** A public.category row; the description is NULL when it is empty. */
+export type CategoryRow = Omit<Category, 'description'> & { description: string | null };
+
+export function toCategory(row: CategoryRow): Category {
+  return { ...row, description: row.description ?? '' };
 }
 
 /** An idea row with the joined category name and submitter name. */
@@ -198,5 +208,17 @@ export function toAppError(error: DatabaseError): Error {
       return new RuleViolation('You are not allowed to do this.');
     default:
       return new Error(`Database error: ${error.message}`);
+  }
+}
+
+/** Like toAppError, with the messages that fit the category form (US-5). */
+export function toCategoryError(error: DatabaseError): Error {
+  switch (error.code) {
+    case '23505':
+      return new RuleViolation('A category with this name already exists.');
+    case '23514':
+      return new RuleViolation('Please enter a name.');
+    default:
+      return toAppError(error);
   }
 }

@@ -1,14 +1,18 @@
 // Data source for VITE_DATA_SOURCE=supabase (US-1, US-3, US-4): categories, ideas, review scores,
 // stage history and votes come from the database, where triggers and row level security enforce the
 // rules (see build/supabase/migrations). The user list and role changes use app_user (US-5); category
-// changes are still taken from mockRepository.
+// changes use the category table (US-5); only the demo data reset is still taken from mockRepository.
 import type { AppUser, Category, IdeaDetails } from '../types';
 import { mockRepository } from './mockRepository';
-import type { IdeaRepository } from './repository';
+import { RuleViolation, type IdeaRepository } from './repository';
 import {
   IDEA_COLUMNS,
   TRANSITION_COLUMNS,
   USER_COLUMNS,
+  CATEGORY_COLUMNS,
+  toCategory,
+  toCategoryError,
+  type CategoryRow,
   toAppError,
   toIdea,
   toListItem,
@@ -105,11 +109,11 @@ export const supabaseRepository: IdeaRepository = {
   async listCategories(): Promise<Category[]> {
     const { data, error } = await getSupabaseClient()
       .from('category')
-      .select('category_id, name, description, sort_order, is_active')
+      .select(CATEGORY_COLUMNS)
       .order('sort_order')
-      .returns<Category[]>();
+      .returns<CategoryRow[]>();
     if (error) throw toAppError(error);
-    return data;
+    return data.map(toCategory);
   },
 
   async toggleVote(ideaId) {
@@ -149,7 +153,19 @@ export const supabaseRepository: IdeaRepository = {
     if (notAllowed) throw notAllowed;
   },
 
-  // Not in the database yet (US-5, next step): category changes.
-  saveCategory: (input, actor) => mockRepository.saveCategory(input, actor),
+  // Only admins may write (RLS); the database trims the texts and sets the sort order of a new category.
+  async saveCategory(input): Promise<Category> {
+    const fields = { name: input.name.trim(), description: input.description.trim(), is_active: input.is_active };
+    if (!fields.name) throw new RuleViolation('Please enter a name.');
+    const table = getSupabaseClient().from('category');
+    const { data, error } =
+      input.category_id === undefined
+        ? await table.insert(fields).select(CATEGORY_COLUMNS).returns<CategoryRow[]>()
+        : await table.update(fields).eq('category_id', input.category_id).select(CATEGORY_COLUMNS).returns<CategoryRow[]>();
+    if (error) throw toCategoryError(error);
+    // Row level security hides rows silently: no row back means "not allowed" or "not found".
+    if (data.length === 0) throw new RuleViolation('You are not allowed to change this category.');
+    return toCategory(data[0]);
+  },
   resetDemoData: () => mockRepository.resetDemoData(),
 };
