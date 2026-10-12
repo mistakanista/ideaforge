@@ -5,6 +5,8 @@ import { repository, RuleViolation } from '../data';
 import { useCurrentUser } from '../session/CurrentUser';
 import type { Category, CategoryInput, UserRole } from '../types';
 
+const DATA_FROM_DATABASE = import.meta.env.VITE_DATA_SOURCE === 'supabase';
+
 type Message = { kind: 'success' | 'error'; text: string } | null;
 
 function errorMessage(err: unknown): string {
@@ -21,7 +23,7 @@ function MessageLine({ message }: { message: Message }) {
 }
 
 function UsersSection() {
-  const { authMode, user: me, users, actAs, refreshUsers } = useCurrentUser();
+  const { authMode, user: me, users, actAs, refreshUsers, reloadProfile } = useCurrentUser();
   const canActAs = authMode === 'mock';
   const [message, setMessage] = useState<Message>(null);
   const activeAdmins = users.filter((u) => u.role === 'ADMIN' && u.is_active).length;
@@ -31,6 +33,8 @@ function UsersSection() {
     try {
       await repository.updateUserRole(userId, role, me);
       await refreshUsers();
+      // An admin who changed their own role gets the new permissions at once.
+      if (userId === me.user_id) await reloadProfile();
       const name = users.find((u) => u.user_id === userId)?.display_name;
       setMessage({ kind: 'success', text: `${name} is now ${ROLE_LABELS[role]}.` });
     } catch (err) {
@@ -45,7 +49,9 @@ function UsersSection() {
         Change roles, for example to make someone a reviewer.
         {canActAs
           ? ' Use “Act as” to test the app as that user.'
-          : ' Note: until the ideas are stored in Supabase, role changes here only affect the demo data. Real roles are changed in Supabase.'}
+          : DATA_FROM_DATABASE
+            ? ''
+            : ' Note: until the ideas are stored in Supabase, role changes here only affect the demo data. Real roles are changed in Supabase.'}
       </p>
       <MessageLine message={message} />
       <div className="table-wrap">

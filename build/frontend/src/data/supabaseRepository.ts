@@ -1,7 +1,7 @@
 // Data source for VITE_DATA_SOURCE=supabase (US-1, US-3, US-4): categories, ideas, review scores,
 // stage history and votes come from the database, where triggers and row level security enforce the
-// rules (see build/supabase/migrations). The user list comes from app_user (US-5); role changes
-// and category changes are still taken from mockRepository.
+// rules (see build/supabase/migrations). The user list and role changes use app_user (US-5); category
+// changes are still taken from mockRepository.
 import type { AppUser, Category, IdeaDetails } from '../types';
 import { mockRepository } from './mockRepository';
 import type { IdeaRepository } from './repository';
@@ -15,6 +15,7 @@ import {
   toReviewDetails,
   toVoteInfo,
   toAppUser,
+  roleUpdateError,
   type IdeaRow,
   type TransitionRow,
   type UserRow,
@@ -135,8 +136,20 @@ export const supabaseRepository: IdeaRepository = {
     return data.map(toAppUser);
   },
 
-  // Not in the database yet (US-5, next steps): role changes and category changes.
-  updateUserRole: (userId, role, actor) => mockRepository.updateUserRole(userId, role, actor),
+  // The acting admin is the signed-in user: the trigger app_user_check() sets role_changed_by/at
+  // and enforces "admins only" and "last admin" (the actor argument is not needed here).
+  async updateUserRole(userId, role) {
+    const { data, error } = await getSupabaseClient()
+      .from('app_user')
+      .update({ role })
+      .eq('user_id', userId)
+      .select('user_id');
+    if (error) throw toAppError(error);
+    const notAllowed = roleUpdateError(data);
+    if (notAllowed) throw notAllowed;
+  },
+
+  // Not in the database yet (US-5, next step): category changes.
   saveCategory: (input, actor) => mockRepository.saveCategory(input, actor),
   resetDemoData: () => mockRepository.resetDemoData(),
 };

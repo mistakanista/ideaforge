@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { RuleViolation } from './repository';
-import { lastReviewedAt, NO_VOTES, toAppError, toIdea, toListItem, toReviewDetails, toVoteInfo, toAppUser, type IdeaRow, type TransitionRow } from './supabaseMapping';
+import { lastReviewedAt, NO_VOTES, toAppError, toIdea, toListItem, toReviewDetails, toVoteInfo, toAppUser, roleUpdateError, type IdeaRow, type TransitionRow } from './supabaseMapping';
 
 const row: IdeaRow = {
   idea_id: 61,
@@ -172,5 +172,15 @@ describe('toAppUser', () => {
   });
   it('shows a fallback office while the user has not chosen one', () => {
     expect(toAppUser({ ...user, office: null }).office).toBe('BRISTOL');
+  });
+});
+
+describe('roleUpdateError', () => {
+  it('accepts an update that changed a row', () => {
+    expect(roleUpdateError([{ user_id: 5 }])).toBeNull();
+  });
+  it('rejects an update that changed no row (row level security or unknown user)', () => {
+    expect(roleUpdateError([])).toBeInstanceOf(RuleViolation);
+    expect(roleUpdateError(null)).toBeInstanceOf(RuleViolation);
   });
 });

@@ -21,6 +21,11 @@ export function toAppUser(row: UserRow): AppUser {
   return { ...row, office: row.office ?? FALLBACK_OFFICE };
 }
 
+/** Row level security hides rows silently, so an update that returns no row was not allowed (or the id is unknown). */
+export function roleUpdateError(updatedRows: unknown[] | null): RuleViolation | null {
+  return updatedRows && updatedRows.length > 0 ? null : new RuleViolation('You are not allowed to change this role.');
+}
+
 /** An idea row with the joined category name and submitter name. */
 export interface IdeaRow {
   idea_id: number;
