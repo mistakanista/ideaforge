@@ -2,7 +2,7 @@
 -- Everything runs in one transaction and is rolled back at the end.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(27);
+select plan(32);
 
 -- Start from an empty user table, independent of seed.sql (rolled back at the end)
 delete from public.vote;  -- votes reference ideas and users (demo votes from scripts/import_demo_votes.sql)
@@ -64,7 +64,7 @@ select throws_ok(
 select throws_ok(
   $$ insert into public.idea (title, problem, solution, expected_impact, category_id, resubmission_of)
      values ('Shared car pool 2', 'p', 's', 'i', 1, (select idea_id from public.idea where title = 'Shared car pool')) $$,
-  'Resubmissions are not possible yet', 'resubmissions are not possible through the API yet');
+  'Only a declined idea can get a second chance', 'an idea that is not declined cannot get a second chance');
 select throws_ok(
   $$ update public.idea set title = 'Changed' where title = 'Shared car pool' $$,
   '42501', null, 'ideas cannot be changed through the API');
@@ -91,6 +91,37 @@ select is((select count(*) from public.idea), 2::bigint, 'reviewers see confiden
 select set_config('request.jwt.claims', '{"sub": "b0000000-0000-0000-0000-000000000004", "role": "authenticated"}', true);
 select results_eq($$ select title from public.idea $$, $$ values ('Shared car pool') $$,
   'admins do not see confidential ideas');
+
+-- Second chance through the API (US-6): own declined ideas only, once
+reset role;
+select set_config('request.jwt.claims', '', true);  -- the owner inserts for fixed submitters, no signed-in user
+insert into public.idea (title, problem, solution, expected_impact, category_id, submitter_id) values
+  ('Declined by Sam', 'p', 's', 'i', 1, (select user_id from public.app_user where email = 'sam.taylor@example.com')),
+  ('Declined by Olivia', 'p', 's', 'i', 1, (select user_id from public.app_user where email = 'olivia.brown@example.com'));
+select set_config('ideaforge.via_transition', 'on', true);  -- stage changes are only allowed through idea_transition; test setup shortcut
+update public.idea set current_stage = 'DECLINED' where title like 'Declined by %';
+select set_config('ideaforge.via_transition', 'off', true);
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub": "b0000000-0000-0000-0000-000000000001", "role": "authenticated"}', true);
+select lives_ok(
+  $$ insert into public.idea (title, problem, solution, expected_impact, category_id, resubmission_of)
+     values ('Declined by Sam, improved', 'p', 's', 'i', 1, (select idea_id from public.idea where title = 'Declined by Sam')) $$,
+  'the submitter can give their declined idea a second chance');
+select is((select current_stage from public.idea where title = 'Declined by Sam, improved'), 'SUBMITTED'::public.idea_stage,
+  'the second attempt starts as SUBMITTED');
+select throws_ok(
+  $$ insert into public.idea (title, problem, solution, expected_impact, category_id, resubmission_of)
+     values ('Declined by Sam, again', 'p', 's', 'i', 1, (select idea_id from public.idea where title = 'Declined by Sam')) $$,
+  'This idea has already had its second chance', 'a second chance can be used only once');
+select throws_ok(
+  $$ insert into public.idea (title, problem, solution, expected_impact, category_id, resubmission_of)
+     values ('Olivia''s idea, improved by Sam', 'p', 's', 'i', 1, (select idea_id from public.idea where title = 'Declined by Olivia')) $$,
+  'You can only give your own declined ideas a second chance', 'nobody else can resubmit a declined idea');
+select throws_ok(
+  $$ insert into public.idea (title, problem, solution, expected_impact, category_id, resubmission_of)
+     values ('Idea of nobody', 'p', 's', 'i', 1, 999999) $$,
+  'You can only give your own declined ideas a second chance', 'an unknown original idea is rejected');
+select set_config('request.jwt.claims', '{"sub": "b0000000-0000-0000-0000-000000000004", "role": "authenticated"}', true);  -- back to Priya (admin), needed for the deactivation below
 
 -- Anonymous visitors
 reset role;
