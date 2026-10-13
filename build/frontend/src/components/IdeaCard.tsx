@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { formatDate, OFFICE_LABELS } from '../config';
 import { canVote, showsVotes } from '../lib/voteRules';
 import type { IdeaListItem } from '../types';
@@ -6,6 +7,10 @@ import { ConfidentialBadge, StageBadge } from './StageBadge';
 
 interface IdeaCardProps {
   idea: IdeaListItem;
+  /** The viewer may give this declined idea a second chance (US-6). */
+  canImprove?: boolean;
+  /** Title of the declined idea this one is a second attempt of, if the viewer can see it. */
+  originalTitle?: string;
   expanded: boolean;
   onToggleDetails: () => void;
   onToggleVote: () => void;
@@ -17,7 +22,7 @@ interface IdeaCardProps {
   onReviewed?: () => void;
 }
 
-export function IdeaCard({ idea, expanded, onToggleDetails, onToggleVote, voting = false, voteError = null, onReviewed }: IdeaCardProps) {
+export function IdeaCard({ idea, canImprove = false, originalTitle, expanded, onToggleDetails, onToggleVote, voting = false, voteError = null, onReviewed }: IdeaCardProps) {
   const detailsId = `idea-details-${idea.idea_id}`;
   return (
     <article className={`card idea-card${expanded ? ' expanded' : ''}`} aria-labelledby={`idea-title-${idea.idea_id}`}>
@@ -30,6 +35,7 @@ export function IdeaCard({ idea, expanded, onToggleDetails, onToggleVote, voting
       </div>
 
       <h3 id={`idea-title-${idea.idea_id}`}>{idea.title}</h3>
+      {originalTitle && <p className="muted small">Second chance of: {originalTitle}</p>}
       {!expanded && <p className="clamp">{idea.problem}</p>}
 
       <div className="idea-card-bottom">
@@ -43,6 +49,11 @@ export function IdeaCard({ idea, expanded, onToggleDetails, onToggleVote, voting
           <button type="button" className="btn btn-secondary" aria-expanded={expanded} aria-controls={detailsId} onClick={onToggleDetails}>
             {expanded ? 'Hide details' : 'Details'}
           </button>
+          {canImprove && (
+            <Link to={`/submit?improve=${idea.idea_id}`} className="btn btn-primary">
+              Improve idea
+            </Link>
+          )}
           {/* Confidential ideas get no votes (US-4): no button and no count. */}
           {canVote(idea) ? (
             <button

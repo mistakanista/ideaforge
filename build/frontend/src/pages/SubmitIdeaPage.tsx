@@ -1,9 +1,10 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { canImprove } from '../lib/resubmitRules';
 import { OFFICE_LABELS, STAGES } from '../config';
 import { repository, RuleViolation } from '../data';
 import { useCurrentUser } from '../session/CurrentUser';
-import type { Category } from '../types';
+import type { Category, IdeaListItem } from '../types';
 
 interface FormState {
   title: string;
@@ -34,6 +35,9 @@ function validate(form: FormState): Partial<Record<FieldName, string>> {
 export function SubmitIdeaPage() {
   const { user } = useCurrentUser();
   const navigate = useNavigate();
+  const improveId = Number(useSearchParams()[0].get('improve')) || null;
+  const [original, setOriginal] = useState<IdeaListItem | null>(null);
+  const [originalError, setOriginalError] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [form, setForm] = useState<FormState>(EMPTY);
   const [errors, setErrors] = useState<Partial<Record<FieldName, string>>>({});
@@ -43,6 +47,27 @@ export function SubmitIdeaPage() {
   useEffect(() => {
     void repository.listCategories().then((all) => setCategories(all.filter((c) => c.is_active)));
   }, []);
+
+  // Second chance (US-6): load the declined idea into the form. The database checks the rules again.
+  useEffect(() => {
+    if (!improveId || !user) return;
+    void repository.listIdeas(user).then((all) => {
+      const found = all.find((i) => i.idea_id === improveId);
+      if (!found || !canImprove(found, all.some((i) => i.resubmission_of === found.idea_id))) {
+        setOriginalError('This idea cannot get a second chance.');
+        return;
+      }
+      setOriginal(found);
+      setForm({
+        title: found.title,
+        problem: found.problem,
+        solution: found.solution,
+        expected_impact: found.expected_impact,
+        category_id: String(found.category_id),
+        is_confidential: found.is_confidential,
+      });
+    });
+  }, [improveId, user]);
 
   function update<K extends keyof FormState>(field: K, value: FormState[K]) {
     setForm((f) => ({ ...f, [field]: value }));
@@ -61,7 +86,7 @@ export function SubmitIdeaPage() {
     setSaving(true);
     setFormError(null);
     try {
-      await repository.createIdea({ ...form, category_id: Number(form.category_id) }, user);
+      await repository.createIdea({ ...form, category_id: Number(form.category_id), resubmission_of: original?.idea_id }, user);
       navigate('/dashboard', { state: { created: form.title.trim() } });
     } catch (err) {
       setFormError(err instanceof RuleViolation ? err.message : 'Something went wrong. Please try again.');
@@ -91,7 +116,17 @@ export function SubmitIdeaPage() {
       <p className="breadcrumb">
         <Link to="/dashboard">Browse</Link> / New idea
       </p>
-      <h1>Submit an idea</h1>
+      <h1>{improveId ? 'Improve your idea' : 'Submit an idea'}</h1>
+      {original && (
+        <p className="card notice" role="status">
+          Second chance of: <strong>{original.title}</strong>. Change what you want to improve and submit it again.
+        </p>
+      )}
+      {originalError && (
+        <p className="form-error" role="alert">
+          {originalError}
+        </p>
+      )}
       <p className="muted">Tell us what could work better and how. Reviewers read every submission.</p>
 
       <div className="submit-layout">

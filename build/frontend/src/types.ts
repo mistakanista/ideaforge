@@ -112,6 +112,8 @@ export interface NewIdeaInput {
   expected_impact: string;
   category_id: number;
   is_confidential: boolean;
+  /** Declined idea of the submitter that this idea gives a second chance (US-6). */
+  resubmission_of?: number | null;
 }
 
 export interface CategoryInput {

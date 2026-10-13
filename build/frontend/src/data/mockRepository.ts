@@ -3,6 +3,7 @@
 import { SCORING_CRITERIA } from '../config';
 import { canSeeIdea } from '../lib/ideaQuery';
 import { canReview, nextStage } from '../lib/reviewRules';
+import { resubmitRuleViolation } from '../lib/resubmitRules';
 import { voteRuleViolation } from '../lib/voteRules';
 import { upsertUserByEmail, type SessionProfile } from '../lib/sessionUser';
 import type { AppUser, Category, Idea, IdeaDetails, IdeaListItem, ReviewerScorecard } from '../types';
@@ -120,6 +121,13 @@ export const mockRepository: IdeaRepository = {
     const category = db.categories.find((c) => c.category_id === input.category_id);
     if (!category || !category.is_active) throw new RuleViolation('Please choose an active category.');
 
+    if (input.resubmission_of != null) {
+      const original = db.ideas.find((i) => i.idea_id === input.resubmission_of);
+      const again = db.ideas.some((i) => i.resubmission_of === input.resubmission_of);
+      const message = resubmitRuleViolation(original, submitter.user_id, again);
+      if (message) throw new RuleViolation(message);
+    }
+
     const now = new Date().toISOString();
     const idea: Idea = {
       idea_id: nextId(db.ideas, (i) => i.idea_id),
@@ -131,7 +139,7 @@ export const mockRepository: IdeaRepository = {
       submitter_id: submitter.user_id,
       current_stage: 'SUBMITTED',
       is_confidential: input.is_confidential,
-      resubmission_of: null,
+      resubmission_of: input.resubmission_of ?? null,
       created_at: now,
     };
     db.ideas.push(idea);

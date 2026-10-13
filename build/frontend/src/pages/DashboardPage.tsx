@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { Filters } from '../components/Filters';
 import { IdeaCard } from '../components/IdeaCard';
+import { canImprove } from '../lib/resubmitRules';
 import { Pagination } from '../components/Pagination';
 import { DEFAULT_PAGE_SIZE, OFFICES, PAGE_SIZES, STAGES, type PageSize } from '../config';
 import { repository } from '../data';
@@ -82,6 +83,8 @@ export function DashboardPage() {
   const filtered = ideas ? sortIdeas(filterIdeas(ideas, filters), filters.sort) : [];
   const counts = stageCounts(ideas ?? [], filters);
   const submitters = submitterOptions(ideas ?? []);
+  const resubmitted = new Set((ideas ?? []).map((i) => i.resubmission_of));
+  const titleById = new Map((ideas ?? []).map((i) => [i.idea_id, i.title]));
   const page = paginate(filtered, requestedPage, pageSize);
 
   function updateFilters(changes: Partial<IdeaFilters>) {
@@ -153,6 +156,8 @@ export function DashboardPage() {
             <IdeaCard
               key={idea.idea_id}
               idea={idea}
+              canImprove={canImprove(idea, resubmitted.has(idea.idea_id))}
+              originalTitle={idea.resubmission_of === null ? undefined : titleById.get(idea.resubmission_of)}
               expanded={expanded.has(idea.idea_id)}
               onToggleDetails={() => toggleDetails(idea.idea_id)}
               onToggleVote={() => void toggleVote(idea.idea_id)}
