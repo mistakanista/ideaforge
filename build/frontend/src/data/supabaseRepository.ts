@@ -83,6 +83,7 @@ export const supabaseRepository: IdeaRepository = {
         expected_impact: input.expected_impact.trim(),
         category_id: input.category_id,
         is_confidential: input.is_confidential,
+        is_anonymous: input.is_anonymous,
         resubmission_of: input.resubmission_of ?? null,
       })
       .select(IDEA_COLUMNS)

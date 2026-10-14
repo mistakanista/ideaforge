@@ -1,5 +1,6 @@
 // Pure functions for visibility, search, filters, sorting and paging of the dashboard.
 // Kept free of React and storage so they can be unit tested and later reused or moved into SQL.
+import { hidesSubmitter } from './anonymity';
 import type { AppUser, Idea, IdeaListItem, IdeaStage, OfficeCode } from '../types';
 
 export type SortOrder = 'newest' | 'oldest' | 'votes' | 'reviewed';
@@ -52,7 +53,7 @@ function applyBaseFilters(items: IdeaListItem[], f: IdeaFilters): IdeaListItem[]
     (idea) =>
       (f.categoryId === null || idea.category_id === f.categoryId) &&
       (f.office === null || idea.office === f.office) &&
-      (f.submitterId === null || idea.submitter_id === f.submitterId) &&
+      (f.submitterId === null || (!hidesSubmitter(idea) && idea.submitter_id === f.submitterId)) &&
       (!f.mine || idea.submitted_by_me) &&
       matchesSearch(idea, f.search),
   );
@@ -80,7 +81,7 @@ export interface SubmitterOption {
 /** People for the "Submitted by" filter, taken only from the ideas the viewer may see, sorted by name. */
 export function submitterOptions(items: IdeaListItem[]): SubmitterOption[] {
   const byId = new Map<number, string>();
-  for (const idea of items) byId.set(idea.submitter_id, idea.submitter_name);
+  for (const idea of items.filter((i) => !hidesSubmitter(i))) byId.set(idea.submitter_id, idea.submitter_name);
   return [...byId].map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name) || a.id - b.id);
 }
 

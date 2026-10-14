@@ -3,7 +3,7 @@ import { formatDate, OFFICE_LABELS } from '../config';
 import { canVote, showsVotes } from '../lib/voteRules';
 import type { IdeaListItem } from '../types';
 import { IdeaDetails } from './IdeaDetails';
-import { ConfidentialBadge, StageBadge } from './StageBadge';
+import { AnonymousBadge, ConfidentialBadge, StageBadge } from './StageBadge';
 
 interface IdeaCardProps {
   idea: IdeaListItem;
@@ -30,6 +30,7 @@ export function IdeaCard({ idea, canImprove = false, originalTitle, expanded, on
         <div className="badges">
           <StageBadge stage={idea.current_stage} />
           {idea.is_confidential && <ConfidentialBadge />}
+          {idea.is_anonymous && <AnonymousBadge mine={idea.submitted_by_me} />}
         </div>
         <span className="muted small">{idea.category_name}</span>
       </div>

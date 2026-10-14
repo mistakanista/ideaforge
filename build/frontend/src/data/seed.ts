@@ -179,6 +179,7 @@ export function createSeed(): Database {
       submitter_id: submitter.user_id,
       current_stage: finalStage,
       is_confidential: i % 8 === 3,
+      is_anonymous: i % 7 === 5,
       resubmission_of: null,
       created_at: created.toISOString(),
     };

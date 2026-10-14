@@ -1,6 +1,7 @@
 // Prototype data source: keeps the demo database in localStorage (falls back to memory)
 // and enforces the same rules the database triggers will enforce later.
 import { SCORING_CRITERIA } from '../config';
+import { submitterLabel } from '../lib/anonymity';
 import { canSeeIdea } from '../lib/ideaQuery';
 import { canReview, nextStage } from '../lib/reviewRules';
 import { resubmitRuleViolation } from '../lib/resubmitRules';
@@ -70,7 +71,7 @@ function toListItem(db: Database, idea: Idea, viewer: AppUser): IdeaListItem {
   return {
     ...idea,
     category_name: category?.name ?? 'Unknown',
-    submitter_name: submitter?.display_name ?? 'Unknown',
+    submitter_name: submitterLabel(!!idea.is_anonymous, idea.submitter_id === viewer.user_id, submitter?.display_name ?? 'Unknown'),
     office: submitter?.office ?? 'BRISTOL',
     vote_count: votes.length,
     voted_by_me: votes.some((v) => v.user_id === viewer.user_id),
@@ -109,7 +110,14 @@ export const mockRepository: IdeaRepository = {
     const history = db.history
       .filter((h) => h.idea_id === ideaId)
       .sort((a, b) => b.changed_at.localeCompare(a.changed_at) || b.history_id - a.history_id)
-      .map((h) => ({ ...h, changed_by_name: userName(db, h.changed_by) }));
+      .map((h) => ({
+        ...h,
+        // The "Idea submitted." entry would reveal the submitter of an anonymous idea.
+        changed_by_name:
+          h.from_stage === null
+            ? submitterLabel(!!idea.is_anonymous, idea.submitter_id === viewer.user_id, userName(db, h.changed_by))
+            : userName(db, h.changed_by),
+      }));
 
     return { idea: toListItem(db, idea, viewer), scorecards: [...byReviewer.values()], history };
   },
@@ -139,6 +147,7 @@ export const mockRepository: IdeaRepository = {
       submitter_id: submitter.user_id,
       current_stage: 'SUBMITTED',
       is_confidential: input.is_confidential,
+      is_anonymous: input.is_anonymous,
       resubmission_of: input.resubmission_of ?? null,
       created_at: now,
     };

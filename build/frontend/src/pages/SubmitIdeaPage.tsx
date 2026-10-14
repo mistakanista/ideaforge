@@ -13,11 +13,12 @@ interface FormState {
   expected_impact: string;
   category_id: string;
   is_confidential: boolean;
+  is_anonymous: boolean;
 }
 
-type FieldName = Exclude<keyof FormState, 'is_confidential'>;
+type FieldName = Exclude<keyof FormState, 'is_confidential' | 'is_anonymous'>;
 
-const EMPTY: FormState = { title: '', problem: '', solution: '', expected_impact: '', category_id: '', is_confidential: false };
+const EMPTY: FormState = { title: '', problem: '', solution: '', expected_impact: '', category_id: '', is_confidential: false, is_anonymous: false };
 
 const TITLE_MAX = 120;
 
@@ -65,13 +66,14 @@ export function SubmitIdeaPage() {
         expected_impact: found.expected_impact,
         category_id: String(found.category_id),
         is_confidential: found.is_confidential,
+        is_anonymous: found.is_anonymous,
       });
     });
   }, [improveId, user]);
 
   function update<K extends keyof FormState>(field: K, value: FormState[K]) {
     setForm((f) => ({ ...f, [field]: value }));
-    if (field !== 'is_confidential') setErrors((e) => ({ ...e, [field]: undefined }));
+    if (field !== 'is_confidential' && field !== 'is_anonymous') setErrors((e) => ({ ...e, [field]: undefined }));
   }
 
   async function handleSubmit(event: FormEvent) {
@@ -191,6 +193,20 @@ export function SubmitIdeaPage() {
               <span>
                 <strong>Confidential</strong>
                 <span className="hint">Only you and the innovation panel (reviewers) can see this idea.</span>
+              </span>
+            </label>
+          </div>
+
+          <div className="field">
+            <label className="checkbox checkbox-card">
+              <input
+                type="checkbox"
+                checked={form.is_anonymous}
+                onChange={(e) => update('is_anonymous', e.target.checked)}
+              />
+              <span>
+                <strong>Submit anonymously</strong>
+                <span className="hint">Other people do not see your name. You still find the idea under "My ideas".</span>
               </span>
             </label>
           </div>

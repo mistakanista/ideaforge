@@ -12,6 +12,7 @@ const row: IdeaRow = {
   submitter_id: 7,
   office: 'LEEDS',
   is_confidential: true,
+  is_anonymous: false,
   current_stage: 'SUBMITTED',
   resubmission_of: null,
   created_at: '2026-10-10T20:00:00+00:00',
@@ -57,6 +58,12 @@ describe('toVoteInfo', () => {
 });
 
 describe('toListItem', () => {
+  it('hides the submitter of an anonymous idea from other users but not from the submitter', () => {
+    const anonymous = { ...row, is_anonymous: true };
+    expect(toListItem(anonymous, NO_VOTES, row.submitter_id + 1).submitter_name).toBe('Anonymous');
+    expect(toListItem(anonymous, NO_VOTES, row.submitter_id).submitter_name).toBe(row.submitter?.display_name);
+  });
+
   it('marks the idea as submitted by the viewer only for the own database user id', () => {
     expect(toListItem(row, NO_VOTES, row.submitter_id).submitted_by_me).toBe(true);
     expect(toListItem(row, NO_VOTES, row.submitter_id + 1).submitted_by_me).toBe(false);

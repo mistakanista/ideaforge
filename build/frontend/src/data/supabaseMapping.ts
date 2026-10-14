@@ -3,10 +3,11 @@
 import { SCORING_CRITERIA } from '../config';
 import type { AppUser, Category, Idea, IdeaListItem, IdeaStage, OfficeCode, ReviewerScorecard, StageHistoryEntry } from '../types';
 import { RuleViolation } from './repository';
+import { submitterLabel } from '../lib/anonymity';
 
 /** Columns of public.idea read by the app (see supabase/migrations/20261010192020_idea.sql). */
 export const IDEA_COLUMNS =
-  'idea_id, title, problem, solution, expected_impact, category_id, submitter_id, office, is_confidential, current_stage, resubmission_of, created_at';
+  'idea_id, title, problem, solution, expected_impact, category_id, submitter_id, office, is_confidential, is_anonymous, current_stage, resubmission_of, created_at';
 
 /** Columns of public.app_user read by the admin user list (no auth_user_id, no password data). */
 export const USER_COLUMNS = 'user_id, email, display_name, office, role, role_changed_by, role_changed_at, is_active';
@@ -47,6 +48,7 @@ export interface IdeaRow {
   submitter_id: number;
   office: OfficeCode;
   is_confidential: boolean;
+  is_anonymous: boolean;
   current_stage: IdeaStage;
   resubmission_of: number | null;
   created_at: string;
@@ -85,6 +87,7 @@ export function toIdea(row: IdeaRow): Idea {
     submitter_id: row.submitter_id,
     current_stage: row.current_stage,
     is_confidential: row.is_confidential,
+    is_anonymous: row.is_anonymous,
     resubmission_of: row.resubmission_of,
     created_at: row.created_at,
   };
@@ -100,13 +103,14 @@ export function lastReviewedAt(transitions: { created_at: string }[] | null | un
 
 /** ownUserId is the viewer's app_user.user_id in the database (not the mock user id). */
 export function toListItem(row: IdeaRow, votes: VoteInfo = NO_VOTES, ownUserId: number | null = null): IdeaListItem {
+  const submitted_by_me = ownUserId !== null && row.submitter_id === ownUserId;
   return {
     ...toIdea(row),
     category_name: row.category?.name ?? 'Unknown',
-    submitter_name: row.submitter?.display_name ?? 'Unknown',
+    submitter_name: submitterLabel(row.is_anonymous, submitted_by_me, row.submitter?.display_name ?? 'Unknown'),
     office: row.office,
     ...votes,
-    submitted_by_me: ownUserId !== null && row.submitter_id === ownUserId,
+    submitted_by_me,
     last_reviewed_at: lastReviewedAt(row.idea_transition),
   };
 }

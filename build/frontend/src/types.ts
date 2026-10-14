@@ -37,6 +37,8 @@ export interface Idea {
   current_stage: IdeaStage;
   /** Added to data model V2 in migration 20261010192020_idea.sql (visible only to the submitter and reviewers). */
   is_confidential: boolean;
+  /** Other users do not see the submitter (migration 20261014202404_idea_anonymous.sql, US-11). */
+  is_anonymous: boolean;
   resubmission_of: number | null;
   created_at: string;
 }
@@ -112,6 +114,7 @@ export interface NewIdeaInput {
   expected_impact: string;
   category_id: number;
   is_confidential: boolean;
+  is_anonymous: boolean;
   /** Declined idea of the submitter that this idea gives a second chance (US-6). */
   resubmission_of?: number | null;
 }

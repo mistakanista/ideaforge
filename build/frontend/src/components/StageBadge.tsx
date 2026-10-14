@@ -19,3 +19,12 @@ export function ConfidentialBadge() {
     </span>
   );
 }
+
+/** Shown on anonymous ideas; the submitter sees their own ideas marked "Anonymous to others". */
+export function AnonymousBadge({ mine = false }: { mine?: boolean }) {
+  return (
+    <span className="badge badge-confidential" title={mine ? 'Other people do not see your name' : 'The submitter is not shown'}>
+      <span aria-hidden="true">👤</span> Anonymous{mine ? ' to others' : ''}
+    </span>
+  );
+}

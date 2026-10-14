@@ -13,6 +13,7 @@ function idea(id: number, overrides: Partial<IdeaListItem> = {}): IdeaListItem {
     submitter_id: 10,
     current_stage: 'SUBMITTED' as IdeaStage,
     is_confidential: false,
+    is_anonymous: false,
     resubmission_of: null,
     created_at: `2026-09-${String(id).padStart(2, '0')}T10:00:00.000Z`,
     category_name: 'Client delivery',
@@ -138,5 +139,25 @@ describe('paginate', () => {
   it('builds page numbers with gaps', () => {
     expect(pageNumbers(5, 12)).toEqual([1, null, 4, 5, 6, null, 12]);
     expect(pageNumbers(1, 3)).toEqual([1, 2, 3]);
+  });
+});
+
+describe('anonymous ideas', () => {
+  const others = idea(1, { submitter_id: 10, submitter_name: 'Anonymous', is_anonymous: true });
+  const mine = idea(2, { submitter_id: 11, submitter_name: 'Me', is_anonymous: true, submitted_by_me: true });
+  const normal = idea(3, { submitter_id: 10, submitter_name: 'Sam' });
+
+  it('does not offer the submitter of an anonymous idea of someone else in the filter', () => {
+    expect(submitterOptions([others, normal]).map((o) => o.name)).toEqual(['Sam']);
+    expect(submitterOptions([others])).toEqual([]);
+  });
+
+  it('does not find anonymous ideas of someone else by submitter', () => {
+    const result = filterIdeas([others, normal], { ...DEFAULT_FILTERS, submitterId: 10 });
+    expect(result.map((i) => i.idea_id)).toEqual([3]);
+  });
+
+  it('keeps the own anonymous idea findable', () => {
+    expect(filterIdeas([others, mine], { ...DEFAULT_FILTERS, mine: true }).map((i) => i.idea_id)).toEqual([2]);
   });
 });
