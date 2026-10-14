@@ -94,3 +94,30 @@ Builder: Gernot · Checked by: Uli
 - What went wrong, and how we fixed it: nothing
 - What we learned about building with AI: also Sonnet 5.5 is very reliable
 - Saved version: US-5 update summary
+
+## 13.10.2026 · User story 6 : resubmit declined ideas once
+Builder: Gernot · Checked by: Uli
+
+- What we asked for: user story US-6: implement resubmit declined ideas once
+- What the AI changed:
+  - added supabase rules
+  - added resubmit button to declined ideas visible for creator
+- How we checked it:
+  - Frontend: resubmitted an idea
+- What went wrong, and how we fixed it: nothing
+- What we learned about building with AI: Claude works reliable
+- Saved version: US-6 frontend changes
+
+## 14.10.2026 · User story 11 : anonymous ideas
+Builder: Gernot · Checked by: Uli
+
+- What we asked for: user story US-11: implement anonymous ideas
+- What the AI changed:
+  - added supabase rules and added anonymous field to the idea table
+  - added frontend changes: anonymous checkbox in idea form, name is not visible for others in anonymous ideas
+- How we checked it:
+  - Supabase: a new field was added to the idea table
+  - Frontend: created an anonymous idea and checked it with another user
+- What went wrong, and how we fixed it: nothing
+- What we learned about building with AI: Claude works reliable
+- Saved version: US-11 update buildLogSummary
