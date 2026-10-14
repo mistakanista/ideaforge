@@ -3,7 +3,7 @@
 Simple overview of the tables that exist in Supabase today (schema `public`, plus the link to `auth.users`).
 Update this diagram after each Supabase migration.
 
-- Last update: 2026-10-12, after migration `20261012193813_category_admin_write.sql` (no new tables or columns; only admins can write `category`)
+- Last update: 2026-10-14, after migration `20261014202404_idea_anonymous.sql` (new column `idea.is_anonymous`)
 - Source: `build/supabase/migrations/`
 - Planned full model: `design/DataModel/V2-StammdatenIntegriert/`
 
@@ -59,6 +59,7 @@ erDiagram
         bigint submitter_id FK
         text office "copied from the submitter"
         boolean is_confidential
+        boolean is_anonymous "app hides the submitter from others"
         idea_stage current_stage "set only by idea_transition"
         bigint resubmission_of FK,UK
         timestamptz created_at

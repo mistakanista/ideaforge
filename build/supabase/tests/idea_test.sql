@@ -2,7 +2,7 @@
 -- Everything runs in one transaction and is rolled back at the end.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(32);
+select plan(37);
 
 -- Start from an empty user table, independent of seed.sql (rolled back at the end)
 delete from public.vote;  -- votes reference ideas and users (demo votes from scripts/import_demo_votes.sql)
@@ -121,6 +121,24 @@ select throws_ok(
   $$ insert into public.idea (title, problem, solution, expected_impact, category_id, resubmission_of)
      values ('Idea of nobody', 'p', 's', 'i', 1, 999999) $$,
   'You can only give your own declined ideas a second chance', 'an unknown original idea is rejected');
+
+-- Anonymous ideas (US-11): a flag, set at submit time, never changed afterwards
+select set_config('request.jwt.claims', '{"sub": "b0000000-0000-0000-0000-000000000001", "role": "authenticated"}', true);
+select lives_ok(
+  $$ insert into public.idea (title, problem, solution, expected_impact, category_id, is_anonymous)
+     values ('Anonymous tip', 'p', 's', 'i', 1, true) $$,
+  'staff can submit an anonymous idea');
+select lives_ok(
+  $$ insert into public.idea (title, problem, solution, expected_impact, category_id, is_anonymous, is_confidential)
+     values ('Anonymous and confidential tip', 'p', 's', 'i', 1, true, true) $$,
+  'an idea can be anonymous and confidential at the same time');
+select is((select is_anonymous from public.idea where title = 'Shared car pool'), false, 'ideas are not anonymous by default');
+select is((select submitter_id from public.idea where title = 'Anonymous tip'),
+  (select user_id from public.app_user where email = 'sam.taylor@example.com'), 'the database still stores the submitter of an anonymous idea');
+reset role;
+select throws_ok(
+  $$ update public.idea set is_anonymous = false where title = 'Anonymous tip' $$,
+  'Only the stage of an idea can be changed', 'the anonymous flag cannot be changed afterwards');
 select set_config('request.jwt.claims', '{"sub": "b0000000-0000-0000-0000-000000000004", "role": "authenticated"}', true);  -- back to Priya (admin), needed for the deactivation below
 
 -- Anonymous visitors
