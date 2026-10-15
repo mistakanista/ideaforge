@@ -4,7 +4,7 @@
 -- Run after `npx supabase db reset`. Read-only checks, rolled back at the end.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(27);
+select plan(30);
 
 select is((select count(*) from auth.users where email like '%@tallis.uk'), 13::bigint, '13 demo users exist in Supabase Auth');
 select is((select count(*) from public.app_user where email like '%@tallis.uk'), 13::bigint, 'each demo user has an app_user row');
@@ -90,6 +90,14 @@ select results_eq(
      values ('New idea', 'p', 's', 'i', 1, (select user_id from public.app_user where email = 'daniel.okafor@tallis.uk'))
      returning idea_id $$,
   $$ values (61::bigint) $$, 'a new idea continues with id 61');
+
+select results_eq(
+  $$ select count(*), count(parent_comment_id), count(distinct idea_id) from public.comment $$,
+  $$ values (22::bigint, 9::bigint, 7::bigint) $$, '22 demo comments exist (9 answers) on 7 ideas');
+select is((select count(*) from public.comment c join public.idea i using (idea_id) where i.is_confidential or i.is_anonymous),
+  0::bigint, 'no demo comment is on a confidential or anonymous idea');
+select is((select count(*) from public.comment c join public.comment p on p.comment_id = c.parent_comment_id
+  where p.idea_id <> c.idea_id or p.created_at > c.created_at), 0::bigint, 'every answer is on the same idea and after its comment');
 
 select * from finish();
 rollback;

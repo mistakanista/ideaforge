@@ -59,6 +59,15 @@ export interface Vote {
   created_at: string;
 }
 
+export interface Comment {
+  comment_id: number;
+  idea_id: number;
+  author_id: number;
+  parent_comment_id: number | null;
+  body: string;
+  created_at: string;
+}
+
 export interface IdeaScore {
   idea_id: number;
   reviewer_id: number;

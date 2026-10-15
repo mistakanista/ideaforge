@@ -1,8 +1,8 @@
 // Deterministic demo data: 12 users, 4 categories and 60 ideas in all stages,
-// with votes, reviewer scores and stage history. Same result on every reset.
+// with votes, comments, reviewer scores and stage history. Same result on every reset.
 import { SCORING_CRITERIA } from '../config';
 import { canSeeIdea } from '../lib/ideaQuery';
-import type { AppUser, Category, Idea, IdeaScore, IdeaStage, IdeaStageHistory, OfficeCode, UserRole, Vote } from '../types';
+import type { AppUser, Category, Comment, Idea, IdeaScore, IdeaStage, IdeaStageHistory, OfficeCode, UserRole, Vote } from '../types';
 
 export interface Database {
   users: AppUser[];
@@ -10,6 +10,7 @@ export interface Database {
   ideas: Idea[];
   history: IdeaStageHistory[];
   votes: Vote[];
+  comments: Comment[];
   scores: IdeaScore[];
 }
 
@@ -117,6 +118,34 @@ const MOVE_REASONS: Partial<Record<IdeaStage, string>> = {
   PILOTING: 'Scores are convincing. We start a three-month pilot in one office.',
   IMPLEMENTED: 'The pilot met its goals. The idea is rolled out to all offices.',
 };
+
+// Demo comments (US-7) on non-confidential, non-anonymous ideas; the same list is in
+// build/supabase/scripts/import_demo_comments.sql, keep both in sync.
+// [idea_id, author name, index of the answered comment or null, text, created_at]
+const COMMENTS: [number, string, number | null, string, string][] = [
+  [1, "Sofia Marin", null, "Would this also work for foreign currency receipts? I travel to Dublin a lot.", "2026-04-12T09:14:00Z"],
+  [1, "Daniel Okafor", 0, "Yes, the plan is to read the currency from the receipt and convert at the monthly rate Finance already uses.", "2026-04-12T11:02:00Z"],
+  [1, "Sofia Marin", 1, "Great, that would remove my biggest monthly headache.", "2026-04-12T13:40:00Z"],
+  [1, "Ruth Evans", null, "Please include how long receipts must be kept. Our audit rules ask for seven years.", "2026-04-20T10:30:00Z"],
+  [1, "Chloe Bennett", null, "+1 from me. Finance chases me every month.", "2026-05-03T15:05:00Z"],
+  [2, "Tom Hallworth", null, "Insurance for pool cars needs a look: do we cover all staff drivers?", "2026-04-15T08:45:00Z"],
+  [2, "Chloe Bennett", 5, "Good point. I will ask our broker and add the answer here.", "2026-04-15T16:20:00Z"],
+  [2, "Gareth Lowe", null, "Glasgow to Leeds is the route I drive most. Could an electric car cover it?", "2026-04-22T12:10:00Z"],
+  [2, "Marcus Reid", 7, "Range is fine for that route, but charging at the Leeds office would be needed.", "2026-04-23T09:00:00Z"],
+  [2, "Gareth Lowe", 8, "Then charging points should be part of the proposal.", "2026-04-23T10:25:00Z"],
+  [3, "Aisha Rahman", null, "Which clients would use it first? A pilot with two or three clients would be enough.", "2026-04-18T14:00:00Z"],
+  [3, "Priya Shah", null, "IT security should review the expiring links before we promise anything to clients.", "2026-04-25T09:30:00Z"],
+  [3, "Tom Hallworth", 11, "Agreed, I have asked IT for a short review.", "2026-04-25T17:15:00Z"],
+  [5, "Morgan Hughes", null, "Two hours may be too short for deep work. Could we allow a second booking?", "2026-05-02T11:20:00Z"],
+  [5, "Sam Patel", 13, "Or four hours with a check-in, so unused rooms are released.", "2026-05-02T14:50:00Z"],
+  [9, "Sofia Marin", null, "My buddy made my first weeks much easier. Thank you for suggesting it!", "2026-06-10T09:05:00Z"],
+  [9, "Gareth Lowe", 15, "Great to hear, thanks Sofia!", "2026-06-10T10:30:00Z"],
+  [9, "Lena Fischer", null, "Could buddies get a short guide with ideas for the first coffee chat?", "2026-06-18T13:45:00Z"],
+  [11, "Aisha Rahman", null, "What is the expected payback time compared with the power purchase agreement?", "2026-05-12T10:00:00Z"],
+  [11, "Lena Fischer", 18, "With the agreement there is no upfront cost; the roof survey will show the exact saving.", "2026-05-12T15:30:00Z"],
+  [11, "Daniel Okafor", null, "Does the roof need reinforcement first?", "2026-05-20T08:40:00Z"],
+  [8, "Chloe Bennett", null, "Three questions are a good limit. Please keep one free-text question.", "2026-04-30T12:00:00Z"],
+];
 
 const DECLINE_REASONS = [
   'The costs are too high compared with the expected benefit at the moment.',
@@ -251,5 +280,14 @@ export function createSeed(): Database {
     }
   });
 
-  return { users, categories, ideas, history, votes, scores };
+  const comments: Comment[] = COMMENTS.map(([idea_id, author, parent, body, created_at], i) => ({
+    comment_id: i + 1,
+    idea_id,
+    author_id: users.find((u) => u.display_name === author)!.user_id,
+    parent_comment_id: parent === null ? null : parent + 1,
+    body,
+    created_at,
+  }));
+
+  return { users, categories, ideas, history, votes, comments, scores };
 }

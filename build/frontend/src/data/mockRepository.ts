@@ -21,6 +21,7 @@ function load(): Database {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       memory = JSON.parse(stored) as Database;
+      memory.comments ??= []; // data stored before comments existed
       return memory;
     }
   } catch {
