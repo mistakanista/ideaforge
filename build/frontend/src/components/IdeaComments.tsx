@@ -61,12 +61,21 @@ function CommentThread({ node, idea, depth, replyTo, onReply, onPosted }: Thread
   );
 }
 
-export function IdeaComments({ idea, onChanged }: { idea: IdeaListItem; /** Called after a comment was added, so the list of ideas shows the new count. */ onChanged: () => void }) {
+interface IdeaCommentsProps {
+  idea: IdeaListItem;
+  /** Called after a comment was added, so the list of ideas shows the new count. */
+  onChanged: () => void;
+  /** Called when the form is cancelled on an idea without comments: there is nothing left to show. */
+  onClose: () => void;
+}
+
+export function IdeaComments({ idea, onChanged, onClose }: IdeaCommentsProps) {
   const { user } = useCurrentUser();
   const [items, setItems] = useState<CommentItem[] | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
   const [pageNo, setPageNo] = useState(1);
   const [replyTo, setReplyTo] = useState<number | null>(null);
+  const [writing, setWriting] = useState(true);
   const [reloadCount, setReloadCount] = useState(0);
 
   useEffect(() => {
@@ -91,7 +100,10 @@ export function IdeaComments({ idea, onChanged }: { idea: IdeaListItem; /** Call
   /** A new comment or answer: reload the list; a new top-level comment is on top of page 1. */
   function handlePosted(topLevel: boolean) {
     setReplyTo(null);
-    if (topLevel) setPageNo(1);
+    if (topLevel) {
+      setPageNo(1);
+      setWriting(true);
+    }
     setReloadCount((n) => n + 1);
     onChanged();
   }
@@ -99,7 +111,20 @@ export function IdeaComments({ idea, onChanged }: { idea: IdeaListItem; /** Call
   return (
     <section className="comments" id={`idea-comments-${idea.idea_id}`} aria-label="Comments">
       <h4>Comments</h4>
-      <CommentForm ideaId={idea.idea_id} parentId={null} label="Write a comment" onPosted={() => handlePosted(true)} />
+      {writing ? (
+        <CommentForm
+          ideaId={idea.idea_id}
+          parentId={null}
+          label="Write a comment"
+          onPosted={() => handlePosted(true)}
+          // Without comments the panel would be empty, so it closes; otherwise the form is replaced by a button.
+          onCancel={() => (idea.comment_count === 0 ? onClose() : setWriting(false))}
+        />
+      ) : (
+        <button type="button" className="btn btn-secondary" onClick={() => setWriting(true)}>
+          Write a comment
+        </button>
+      )}
       {error && (
         <p className="form-error" role="alert">
           {error}

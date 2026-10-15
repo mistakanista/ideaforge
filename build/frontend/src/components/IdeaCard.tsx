@@ -105,7 +105,7 @@ export function IdeaCard({ idea, canImprove = false, originalTitle, expanded, on
           <IdeaDetails ideaId={idea.idea_id} onReviewed={onReviewed} />
         </div>
       )}
-      {commentsOpen && allowsComments(idea) && <IdeaComments idea={idea} onChanged={() => onCommentAdded?.()} />}
+      {commentsOpen && allowsComments(idea) && <IdeaComments idea={idea} onChanged={() => onCommentAdded?.()} onClose={() => setCommentsOpen(false)} />}
     </article>
   );
 }
