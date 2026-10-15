@@ -82,3 +82,10 @@ export function commentRuleViolation(
   if (parent && parent.idea_id !== ideaId) return 'The comment you answer does not belong to this idea';
   return commentTextError(body);
 }
+
+export const COMMENT_HAS_ANSWERS = 'This comment has answers and cannot be deleted.';
+
+/** The author can delete a comment only as long as nobody has answered it. */
+export function canDeleteComment(comment: Pick<CommentItem, 'by_me'>, answerCount: number): boolean {
+  return comment.by_me && answerCount === 0;
+}

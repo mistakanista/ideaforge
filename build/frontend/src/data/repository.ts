@@ -35,6 +35,9 @@ export interface IdeaRepository {
   /** Adds a comment, or an answer when parent_comment_id is set; author and time are set by the data source. */
   addComment(input: NewCommentInput, author: AppUser): Promise<void>;
 
+  /** The author only, and only while nobody has answered the comment. */
+  deleteComment(commentId: number, actor: AppUser): Promise<void>;
+
   listUsers(): Promise<AppUser[]>;
   /** Admins only; the last active admin cannot be downgraded. */
   updateUserRole(userId: number, role: UserRole, actor: AppUser): Promise<void>;

@@ -5,7 +5,7 @@ import { submitterLabel } from '../lib/anonymity';
 import { canSeeIdea } from '../lib/ideaQuery';
 import { canReview, nextStage } from '../lib/reviewRules';
 import { resubmitRuleViolation } from '../lib/resubmitRules';
-import { commentRuleViolation } from '../lib/commentRules';
+import { COMMENT_HAS_ANSWERS, commentRuleViolation } from '../lib/commentRules';
 import { voteRuleViolation } from '../lib/voteRules';
 import { upsertUserByEmail, type SessionProfile } from '../lib/sessionUser';
 import type { AppUser, Category, Idea, IdeaDetails, IdeaListItem, ReviewerScorecard } from '../types';
@@ -253,6 +253,16 @@ export const mockRepository: IdeaRepository = {
       body: input.body.trim(),
       created_at: new Date().toISOString(),
     });
+    save(db);
+  },
+
+  async deleteComment(commentId, actor) {
+    const db = load();
+    const comment = db.comments.find((c) => c.comment_id === commentId);
+    // Like row level security: other people's comments are not found.
+    if (!comment || comment.author_id !== actor.user_id) throw new RuleViolation('You are not allowed to delete this comment.');
+    if (db.comments.some((c) => c.parent_comment_id === commentId)) throw new RuleViolation(COMMENT_HAS_ANSWERS);
+    db.comments.splice(db.comments.indexOf(comment), 1);
     save(db);
   },
 

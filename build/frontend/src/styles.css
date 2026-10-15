@@ -250,4 +250,5 @@ textarea { resize: vertical; }
 .comment-form { margin: 0.75rem 0; }
 .comment-form .field { margin-bottom: 0.5rem; }
 .comment-form-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.comment-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 .comment .btn-small { margin-top: 0.5rem; min-height: var(--tap); }

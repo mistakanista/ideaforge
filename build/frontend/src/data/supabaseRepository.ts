@@ -161,6 +161,15 @@ export const supabaseRepository: IdeaRepository = {
     if (error) throw toCommentError(error, 'add');
   },
 
+  async deleteComment(commentId) {
+    // Row level security lets only the author delete; the foreign key on parent_comment_id refuses
+    // a comment that has answers (23503).
+    const { data, error } = await getSupabaseClient().from('comment').delete().eq('comment_id', commentId).select('comment_id');
+    if (error) throw toCommentError(error, 'delete');
+    // Row level security hides rows silently: nothing deleted means not the author's comment.
+    if (data.length === 0) throw new RuleViolation('You are not allowed to delete this comment.');
+  },
+
   async listUsers(): Promise<AppUser[]> {
     const { data, error } = await getSupabaseClient()
       .from('app_user')

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { CommentItem } from '../types';
-import { allowsComments, buildThreads, commentAuthorLabel, commentRuleViolation, commentsButtonLabel, commentTextError, countNodes, showsCommentsButton } from './commentRules';
+import { allowsComments, buildThreads, commentAuthorLabel, canDeleteComment, commentRuleViolation, commentsButtonLabel, commentTextError, countNodes, showsCommentsButton } from './commentRules';
 
 function comment(id: number, parent: number | null, at: string, extra: Partial<CommentItem> = {}): CommentItem {
   return { comment_id: id, idea_id: 1, author_id: 5, parent_comment_id: parent, body: `c${id}`, created_at: at, author_name: 'Sam', by_me: false, ...extra };
@@ -83,5 +83,17 @@ describe('commentRuleViolation', () => {
   it('accepts comments and answers on the same idea', () => {
     expect(commentRuleViolation({ is_confidential: false }, null, 1, 'Hi')).toBeNull();
     expect(commentRuleViolation({ is_confidential: false }, { idea_id: 1 }, 1, 'Hi')).toBeNull();
+  });
+});
+
+describe('canDeleteComment', () => {
+  it('lets the author delete a comment without answers', () => {
+    expect(canDeleteComment({ by_me: true }, 0)).toBe(true);
+  });
+  it('does not allow it once somebody has answered', () => {
+    expect(canDeleteComment({ by_me: true }, 1)).toBe(false);
+  });
+  it('does not allow it for the comments of other people', () => {
+    expect(canDeleteComment({ by_me: false }, 0)).toBe(false);
   });
 });

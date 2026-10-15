@@ -259,6 +259,7 @@ export function toCategoryError(error: DatabaseError): Error {
 }
 
 /** Like toAppError, with the messages that fit adding or deleting a comment (US-7). */
+/** The message of the database rule 'a comment with answers cannot be deleted' is in COMMENT_HAS_ANSWERS (lib/commentRules.ts). */
 export function toCommentError(error: DatabaseError, action: 'add' | 'delete'): Error {
   switch (error.code) {
     case '23514':

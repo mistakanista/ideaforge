@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { formatDateTime } from '../config';
 import { repository } from '../data';
-import { buildThreads, COMMENTS_PER_PAGE, commentAuthorLabel, type CommentNode } from '../lib/commentRules';
+import { buildThreads, canDeleteComment, COMMENTS_PER_PAGE, commentAuthorLabel, type CommentNode } from '../lib/commentRules';
 import { paginate } from '../lib/ideaQuery';
 import { useCurrentUser } from '../session/CurrentUser';
 import type { CommentItem, IdeaListItem } from '../types';
@@ -21,9 +21,17 @@ interface ThreadProps {
   replyTo: number | null;
   onReply: (commentId: number | null) => void;
   onPosted: () => void;
+  /** comment_id of the comment that waits for the confirmation of its deletion. */
+  confirmDelete: number | null;
+  onAskDelete: (commentId: number | null) => void;
+  onDelete: (commentId: number) => void;
+  /** Message of a deletion that failed, with the comment it belongs to. */
+  deleteError: { commentId: number; message: string } | null;
+  deleting: boolean;
 }
 
-function CommentThread({ node, idea, depth, replyTo, onReply, onPosted }: ThreadProps) {
+function CommentThread(props: ThreadProps) {
+  const { node, idea, depth, replyTo, onReply, onPosted, confirmDelete, onAskDelete, onDelete, deleteError, deleting } = props;
   const { comment, replies } = node;
   const author = commentAuthorLabel(comment, idea);
   return (
@@ -35,10 +43,33 @@ function CommentThread({ node, idea, depth, replyTo, onReply, onPosted }: Thread
           <span className="muted"> · {formatDateTime(comment.created_at)}</span>
         </p>
         <p className="comment-text">{comment.body}</p>
-        {replyTo !== comment.comment_id && (
-          <button type="button" className="btn btn-secondary btn-small" onClick={() => onReply(comment.comment_id)}>
-            Reply<span className="visually-hidden"> to {author}</span>
-          </button>
+        <div className="comment-actions">
+          {replyTo !== comment.comment_id && (
+            <button type="button" className="btn btn-secondary btn-small" onClick={() => onReply(comment.comment_id)}>
+              Reply<span className="visually-hidden"> to {author}</span>
+            </button>
+          )}
+          {/* Deleting is permanent, so it needs a second click. Only the author, only without answers. */}
+          {canDeleteComment(comment, replies.length) &&
+            (confirmDelete === comment.comment_id ? (
+              <>
+                <button type="button" className="btn btn-primary btn-small" disabled={deleting} onClick={() => onDelete(comment.comment_id)}>
+                  Yes, delete comment
+                </button>
+                <button type="button" className="btn btn-secondary btn-small" disabled={deleting} onClick={() => onAskDelete(null)}>
+                  Keep comment
+                </button>
+              </>
+            ) : (
+              <button type="button" className="btn btn-secondary btn-small" onClick={() => onAskDelete(comment.comment_id)}>
+                Delete<span className="visually-hidden"> your comment of {formatDateTime(comment.created_at)}</span>
+              </button>
+            ))}
+        </div>
+        {deleteError?.commentId === comment.comment_id && (
+          <p className="form-error" role="alert">
+            {deleteError.message}
+          </p>
         )}
       </div>
       {replyTo === comment.comment_id && (
@@ -53,7 +84,7 @@ function CommentThread({ node, idea, depth, replyTo, onReply, onPosted }: Thread
       {replies.length > 0 && (
         <ul className={`comment-list comment-replies${depth + 1 >= MAX_INDENT ? ' flat' : ''}`} aria-label={`Answers to the comment of ${author}`}>
           {replies.map((r) => (
-            <CommentThread key={r.comment.comment_id} node={r} idea={idea} depth={depth + 1} replyTo={replyTo} onReply={onReply} onPosted={onPosted} />
+            <CommentThread {...props} key={r.comment.comment_id} node={r} depth={depth + 1} />
           ))}
         </ul>
       )}
@@ -76,6 +107,9 @@ export function IdeaComments({ idea, onChanged, onClose }: IdeaCommentsProps) {
   const [pageNo, setPageNo] = useState(1);
   const [replyTo, setReplyTo] = useState<number | null>(null);
   const [writing, setWriting] = useState(true);
+  const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<{ commentId: number; message: string } | null>(null);
   const [reloadCount, setReloadCount] = useState(0);
 
   useEffect(() => {
@@ -96,6 +130,28 @@ export function IdeaComments({ idea, onChanged, onClose }: IdeaCommentsProps) {
 
   const threads = useMemo(() => buildThreads(items ?? []), [items]);
   const page = paginate(threads, pageNo, COMMENTS_PER_PAGE);
+
+  function askDelete(commentId: number | null) {
+    setConfirmDelete(commentId);
+    setDeleteError(null);
+  }
+
+  async function handleDelete(commentId: number) {
+    if (!user || deleting) return;
+    setDeleting(true);
+    try {
+      await repository.deleteComment(commentId, user);
+      setConfirmDelete(null);
+    } catch (e) {
+      // For example somebody answered in the meantime: show the reason and the current list.
+      setConfirmDelete(null);
+      setDeleteError({ commentId, message: e instanceof Error ? e.message : 'The comment could not be deleted.' });
+    } finally {
+      setDeleting(false);
+      setReloadCount((n) => n + 1);
+      onChanged();
+    }
+  }
 
   /** A new comment or answer: reload the list; a new top-level comment is on top of page 1. */
   function handlePosted(topLevel: boolean) {
@@ -135,7 +191,20 @@ export function IdeaComments({ idea, onChanged, onClose }: IdeaCommentsProps) {
       {page.items.length > 0 && (
         <ul className="comment-list">
           {page.items.map((node) => (
-            <CommentThread key={node.comment.comment_id} node={node} idea={idea} depth={0} replyTo={replyTo} onReply={setReplyTo} onPosted={() => handlePosted(false)} />
+            <CommentThread
+              key={node.comment.comment_id}
+              node={node}
+              idea={idea}
+              depth={0}
+              replyTo={replyTo}
+              onReply={setReplyTo}
+              onPosted={() => handlePosted(false)}
+              confirmDelete={confirmDelete}
+              onAskDelete={askDelete}
+              onDelete={(id) => void handleDelete(id)}
+              deleteError={deleteError}
+              deleting={deleting}
+            />
           ))}
         </ul>
       )}
