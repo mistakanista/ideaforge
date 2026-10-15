@@ -1,7 +1,7 @@
 // Pure helpers for supabaseRepository: database rows -> app types, database errors -> messages.
 // Kept free of the Supabase client so they can be unit tested.
 import { SCORING_CRITERIA } from '../config';
-import type { AppUser, Category, Idea, IdeaListItem, IdeaStage, OfficeCode, ReviewerScorecard, StageHistoryEntry } from '../types';
+import type { AppUser, Category, CommentItem, Idea, IdeaListItem, IdeaStage, OfficeCode, ReviewerScorecard, StageHistoryEntry } from '../types';
 import { RuleViolation } from './repository';
 import { submitterLabel } from '../lib/anonymity';
 
@@ -56,6 +56,8 @@ export interface IdeaRow {
   submitter?: { display_name: string } | null;
   /** Embedded rows of public.vote (see 20261011135710_vote.sql); RLS returns them only for visible ideas. */
   vote?: { user_id: number }[] | null;
+  /** Embedded ids of public.comment (see 20261015220429_comment.sql), only to count them; RLS returns them only for visible ideas. */
+  comment?: { comment_id: number }[] | null;
   /** Embedded times of the idea's rows in public.idea_transition (for "Last reviewed first"). */
   idea_transition?: { created_at: string }[] | null;
 }
@@ -110,8 +112,37 @@ export function toListItem(row: IdeaRow, votes: VoteInfo = NO_VOTES, ownUserId: 
     submitter_name: submitterLabel(row.is_anonymous, submitted_by_me, row.submitter?.display_name ?? 'Unknown'),
     office: row.office,
     ...votes,
+    comment_count: row.comment?.length ?? 0,
     submitted_by_me,
     last_reviewed_at: lastReviewedAt(row.idea_transition),
+  };
+}
+
+/** Columns of public.comment read by the app, with the author name (see 20261015220429_comment.sql). */
+export const COMMENT_COLUMNS =
+  'comment_id, idea_id, author_id, parent_comment_id, body, created_at, author:app_user!comment_author_id_fkey(display_name)';
+
+export interface CommentRow {
+  comment_id: number;
+  idea_id: number;
+  author_id: number;
+  parent_comment_id: number | null;
+  body: string;
+  created_at: string;
+  author?: { display_name: string } | null;
+}
+
+/** ownUserId is the viewer's app_user.user_id in the database (not the mock user id). */
+export function toCommentItem(row: CommentRow, ownUserId: number | null): CommentItem {
+  return {
+    comment_id: row.comment_id,
+    idea_id: row.idea_id,
+    author_id: row.author_id,
+    parent_comment_id: row.parent_comment_id,
+    body: row.body,
+    created_at: row.created_at,
+    author_name: row.author?.display_name ?? 'Unknown',
+    by_me: ownUserId !== null && row.author_id === ownUserId,
   };
 }
 

@@ -76,6 +76,7 @@ function toListItem(db: Database, idea: Idea, viewer: AppUser): IdeaListItem {
     office: submitter?.office ?? 'BRISTOL',
     vote_count: votes.length,
     voted_by_me: votes.some((v) => v.user_id === viewer.user_id),
+    comment_count: db.comments.filter((c) => c.idea_id === idea.idea_id).length,
     submitted_by_me: idea.submitter_id === viewer.user_id,
     last_reviewed_at: reviewTimes.length > 0 ? reviewTimes[reviewTimes.length - 1] : null,
   };
@@ -222,6 +223,16 @@ export const mockRepository: IdeaRepository = {
       db.votes.push({ idea_id: ideaId, user_id: user.user_id, created_at: new Date().toISOString() });
     }
     save(db);
+  },
+
+  async listComments(ideaId, viewer) {
+    const db = load();
+    const idea = db.ideas.find((i) => i.idea_id === ideaId);
+    if (!idea || idea.is_confidential || !canSeeIdea(idea, viewer)) return [];
+    return db.comments
+      .filter((c) => c.idea_id === ideaId)
+      .map((c) => ({ ...c, author_name: userName(db, c.author_id), by_me: c.author_id === viewer.user_id }))
+      .sort((a, b) => a.created_at.localeCompare(b.created_at) || a.comment_id - b.comment_id);
   },
 
   async listUsers() {

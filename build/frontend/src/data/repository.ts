@@ -3,6 +3,7 @@
 import type {
   AppUser,
   Category,
+  CommentItem,
   CategoryInput,
   Idea,
   IdeaDetails,
@@ -26,6 +27,9 @@ export interface IdeaRepository {
   reviewIdea(ideaId: number, input: ReviewInput, reviewer: AppUser): Promise<void>;
   /** One vote per person and idea: adds the vote or takes it back. */
   toggleVote(ideaId: number, user: AppUser): Promise<void>;
+
+  /** All comments and answers of an idea, oldest first; empty if the idea is not visible for the viewer. */
+  listComments(ideaId: number, viewer: AppUser): Promise<CommentItem[]>;
 
   listUsers(): Promise<AppUser[]>;
   /** Admins only; the last active admin cannot be downgraded. */

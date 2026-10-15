@@ -2,17 +2,20 @@
 // stage history and votes come from the database, where triggers and row level security enforce the
 // rules (see build/supabase/migrations). The user list and role changes use app_user (US-5); category
 // changes use the category table (US-5); only the demo data reset is still taken from mockRepository.
-import type { AppUser, Category, IdeaDetails } from '../types';
+import type { AppUser, Category, CommentItem, IdeaDetails } from '../types';
 import { mockRepository } from './mockRepository';
 import { RuleViolation, type IdeaRepository } from './repository';
 import {
+  COMMENT_COLUMNS,
   IDEA_COLUMNS,
   TRANSITION_COLUMNS,
   USER_COLUMNS,
   CATEGORY_COLUMNS,
   toCategory,
+  toCommentItem,
   toCategoryError,
   type CategoryRow,
+  type CommentRow,
   toAppError,
   toIdea,
   toListItem,
@@ -26,10 +29,10 @@ import {
 } from './supabaseMapping';
 import { getSupabaseClient } from './supabaseClient';
 
-// Votes (user_id only) and review times are embedded, so vote count, "voted by me" and the
-// last review time need no extra request.
+// Votes (user_id only), comment ids and review times are embedded, so vote count, "voted by me",
+// comment count and the last review time need no extra request.
 const IDEA_WITH_NAMES =
-  `${IDEA_COLUMNS}, category(name), submitter:app_user!idea_submitter_id_fkey(display_name), vote(user_id), ` +
+  `${IDEA_COLUMNS}, category(name), submitter:app_user!idea_submitter_id_fkey(display_name), vote(user_id), comment(comment_id), ` +
   'idea_transition(created_at)';
 
 /** The signed-in user's own app_user.user_id, which differs from the mock user id. */
@@ -130,6 +133,22 @@ export const supabaseRepository: IdeaRepository = {
     if (removed.data.length > 0) return;
     const { error } = await client.from('vote').insert({ idea_id: ideaId });
     if (error) throw toAppError(error);
+  },
+
+  async listComments(ideaId): Promise<CommentItem[]> {
+    // Row level security returns the comments only if the viewer may see the idea.
+    const [{ data, error }, ownId] = await Promise.all([
+      getSupabaseClient()
+        .from('comment')
+        .select(COMMENT_COLUMNS)
+        .eq('idea_id', ideaId)
+        .order('created_at', { ascending: true })
+        .order('comment_id', { ascending: true })
+        .returns<CommentRow[]>(),
+      ownUserId(),
+    ]);
+    if (error) throw toAppError(error);
+    return data.map((row) => toCommentItem(row, ownId));
   },
 
   async listUsers(): Promise<AppUser[]> {

@@ -1,0 +1,58 @@
+// Rules and helpers for comments (US-7). The rules are the same as in the database trigger comment_check().
+import type { CommentItem, IdeaListItem } from '../types';
+import { ANONYMOUS_LABEL } from './anonymity';
+
+/** Top-level comments per page; their answers are shown below them on the same page. */
+export const COMMENTS_PER_PAGE = 10;
+
+/** Confidential ideas get no comments at all, so they have no comments button. */
+export function allowsComments(idea: Pick<IdeaListItem, 'is_confidential'>): boolean {
+  return !idea.is_confidential;
+}
+
+/** The button that opens the comments is only shown when there is something to show. */
+export function showsCommentsButton(idea: Pick<IdeaListItem, 'is_confidential' | 'comment_count'>): boolean {
+  return allowsComments(idea) && idea.comment_count > 0;
+}
+
+/** Label of the button that opens or closes the comments, with the number of all comments and answers. */
+export function commentsButtonLabel(open: boolean, count: number): string {
+  return `${open ? 'Hide' : 'Show'} comments (${count})`;
+}
+
+export interface CommentNode {
+  comment: CommentItem;
+  /** Answers to this comment, oldest first. */
+  replies: CommentNode[];
+}
+
+const oldestFirst = (a: CommentItem, b: CommentItem) =>
+  a.created_at.localeCompare(b.created_at) || a.comment_id - b.comment_id;
+
+/**
+ * Comments with their answers as a tree: top-level comments newest first, answers below
+ * their comment, oldest first. An answer whose comment is missing is shown as a top-level comment.
+ */
+export function buildThreads(items: CommentItem[]): CommentNode[] {
+  const nodes = new Map<number, CommentNode>(items.map((c) => [c.comment_id, { comment: c, replies: [] }]));
+  const roots: CommentNode[] = [];
+  for (const c of [...items].sort(oldestFirst)) {
+    const node = nodes.get(c.comment_id)!;
+    const parent = c.parent_comment_id === null ? undefined : nodes.get(c.parent_comment_id);
+    (parent ? parent.replies : roots).push(node);
+  }
+  return roots.reverse();
+}
+
+/** Name shown for the author of a comment: the submitter of an anonymous idea stays anonymous (US-11). */
+export function commentAuthorLabel(
+  comment: Pick<CommentItem, 'author_id' | 'author_name' | 'by_me'>,
+  idea: Pick<IdeaListItem, 'submitter_id' | 'is_anonymous'>,
+): string {
+  return idea.is_anonymous && comment.author_id === idea.submitter_id && !comment.by_me ? ANONYMOUS_LABEL : comment.author_name;
+}
+
+/** Number of comments and answers in a tree. */
+export function countNodes(nodes: CommentNode[]): number {
+  return nodes.reduce((sum, n) => sum + 1 + countNodes(n.replies), 0);
+}

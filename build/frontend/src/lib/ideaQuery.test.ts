@@ -20,6 +20,7 @@ function idea(id: number, overrides: Partial<IdeaListItem> = {}): IdeaListItem {
     submitter_name: 'Someone',
     office: 'BRISTOL' as OfficeCode,
     vote_count: 0,
+    comment_count: 0,
     voted_by_me: false,
     submitted_by_me: false,
     last_reviewed_at: null,

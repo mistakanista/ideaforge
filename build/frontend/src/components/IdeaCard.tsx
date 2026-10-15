@@ -1,7 +1,10 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { formatDate, OFFICE_LABELS } from '../config';
+import { commentsButtonLabel, showsCommentsButton } from '../lib/commentRules';
 import { canVote, showsVotes } from '../lib/voteRules';
 import type { IdeaListItem } from '../types';
+import { IdeaComments } from './IdeaComments';
 import { IdeaDetails } from './IdeaDetails';
 import { AnonymousBadge, ConfidentialBadge, StageBadge } from './StageBadge';
 
@@ -24,6 +27,9 @@ interface IdeaCardProps {
 
 export function IdeaCard({ idea, canImprove = false, originalTitle, expanded, onToggleDetails, onToggleVote, voting = false, voteError = null, onReviewed }: IdeaCardProps) {
   const detailsId = `idea-details-${idea.idea_id}`;
+  const commentsId = `idea-comments-${idea.idea_id}`;
+  // Opening the comments is independent of the details.
+  const [commentsOpen, setCommentsOpen] = useState(false);
   return (
     <article className={`card idea-card${expanded ? ' expanded' : ''}`} aria-labelledby={`idea-title-${idea.idea_id}`}>
       <div className="idea-card-top">
@@ -50,6 +56,12 @@ export function IdeaCard({ idea, canImprove = false, originalTitle, expanded, on
           <button type="button" className="btn btn-secondary" aria-expanded={expanded} aria-controls={detailsId} onClick={onToggleDetails}>
             {expanded ? 'Hide details' : 'Details'}
           </button>
+          {/* Only when there are comments (US-7); confidential ideas never have any. */}
+          {showsCommentsButton(idea) && (
+            <button type="button" className="btn btn-secondary" aria-expanded={commentsOpen} aria-controls={commentsId} onClick={() => setCommentsOpen(!commentsOpen)}>
+              {commentsButtonLabel(commentsOpen, idea.comment_count)}
+            </button>
+          )}
           {canImprove && (
             <Link to={`/submit?improve=${idea.idea_id}`} className="btn btn-primary">
               Improve idea
@@ -90,6 +102,7 @@ export function IdeaCard({ idea, canImprove = false, originalTitle, expanded, on
           <IdeaDetails ideaId={idea.idea_id} onReviewed={onReviewed} />
         </div>
       )}
+      {commentsOpen && showsCommentsButton(idea) && <IdeaComments idea={idea} />}
     </article>
   );
 }

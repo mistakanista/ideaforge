@@ -236,3 +236,14 @@ textarea { resize: vertical; }
   .admin-table tr { display: block; border-bottom: 1px solid var(--border); padding: 0.5rem 0; }
   .admin-table th, .admin-table td { display: block; border: none; padding: 0.2rem 0; }
 }
+
+/* Comments (US-7) */
+.comments { margin-top: 1rem; padding-top: 0.5rem; border-top: 1px solid var(--border); }
+.comment-list { list-style: none; margin: 0; padding: 0; }
+.comment { padding: 0.75rem 0; border-bottom: 1px solid var(--border); }
+.comment:last-child { border-bottom: none; }
+.comment-meta { margin: 0 0 0.25rem; }
+.comment-text { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.comment-replies { margin: 0.5rem 0 0 1rem; padding-left: 0.75rem; border-left: 3px solid var(--border); }
+.comment-replies.flat { margin-left: 0; }
+.comment-replies .comment { padding: 0.5rem 0; }

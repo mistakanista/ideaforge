@@ -68,6 +68,18 @@ export interface Comment {
   created_at: string;
 }
 
+/** A comment as shown in the list: with the author's name, and whether the viewer wrote it. */
+export interface CommentItem extends Comment {
+  author_name: string;
+  by_me: boolean;
+}
+
+/** A comment as shown in the list: with the author's name, and whether the viewer wrote it. */
+export interface CommentItem extends Comment {
+  author_name: string;
+  by_me: boolean;
+}
+
 export interface IdeaScore {
   idea_id: number;
   reviewer_id: number;
@@ -83,6 +95,8 @@ export interface IdeaListItem extends Idea {
   office: OfficeCode;
   vote_count: number;
   voted_by_me: boolean;
+  /** All comments and answers on the idea (US-7); always 0 for confidential ideas. */
+  comment_count: number;
   /** The viewer submitted this idea (set by the repository, since mock and database user ids differ). */
   submitted_by_me: boolean;
   /** Time of the latest review (stage change or decline); null if the idea was never reviewed. */
