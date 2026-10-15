@@ -3,7 +3,7 @@
 Simple overview of the tables that exist in Supabase today (schema `public`, plus the link to `auth.users`).
 Update this diagram after each Supabase migration.
 
-- Last update: 2026-10-14, after migration `20261014202404_idea_anonymous.sql` (new column `idea.is_anonymous`)
+- Last update: 2026-10-15, after migration `20261015220429_comment.sql` (new table `comment`)
 - Source: `build/supabase/migrations/`
 - Planned full model: `design/DataModel/V2-StammdatenIntegriert/`
 
@@ -18,6 +18,9 @@ erDiagram
     APP_USER ||--o{ IDEA_TRANSITION : "reviews (reviewer)"
     IDEA ||--o{ VOTE : "gets"
     APP_USER ||--o{ VOTE : "votes (never own or confidential idea)"
+    IDEA ||--o{ COMMENT : "gets (never confidential)"
+    APP_USER ||--o{ COMMENT : writes
+    COMMENT |o--o{ COMMENT : "answered by"
 
     AUTH_USERS {
         uuid id PK "Supabase Auth, holds the password"
@@ -79,6 +82,14 @@ erDiagram
     VOTE {
         bigint idea_id PK,FK
         bigint user_id PK,FK "voter, set by trigger"
+        timestamptz created_at
+    }
+    COMMENT {
+        bigint comment_id PK
+        bigint idea_id FK
+        bigint author_id FK "set by trigger"
+        bigint parent_comment_id FK "answered comment, optional"
+        text body "1-2000 characters, trimmed"
         timestamptz created_at
     }
 ```
