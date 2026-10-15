@@ -257,3 +257,17 @@ export function toCategoryError(error: DatabaseError): Error {
       return toAppError(error);
   }
 }
+
+/** Like toAppError, with the messages that fit adding or deleting a comment (US-7). */
+export function toCommentError(error: DatabaseError, action: 'add' | 'delete'): Error {
+  switch (error.code) {
+    case '23514':
+      return new RuleViolation('Please write a comment of 1 to 2000 characters.');
+    case '23503':
+      return new RuleViolation(
+        action === 'delete' ? 'This comment has answers and cannot be deleted.' : 'The comment you answer does not exist.',
+      );
+    default:
+      return toAppError(error);
+  }
+}

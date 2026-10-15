@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { formatDate, OFFICE_LABELS } from '../config';
-import { commentsButtonLabel, showsCommentsButton } from '../lib/commentRules';
+import { allowsComments, commentsButtonLabel } from '../lib/commentRules';
 import { canVote, showsVotes } from '../lib/voteRules';
 import type { IdeaListItem } from '../types';
 import { IdeaComments } from './IdeaComments';
@@ -23,9 +23,11 @@ interface IdeaCardProps {
   voteError?: string | null;
   /** Called after a reviewer saved a review, so the list can show the new stage. */
   onReviewed?: () => void;
+  /** Called after the viewer added a comment, so the list can show the new count. */
+  onCommentAdded?: () => void;
 }
 
-export function IdeaCard({ idea, canImprove = false, originalTitle, expanded, onToggleDetails, onToggleVote, voting = false, voteError = null, onReviewed }: IdeaCardProps) {
+export function IdeaCard({ idea, canImprove = false, originalTitle, expanded, onToggleDetails, onToggleVote, voting = false, voteError = null, onReviewed, onCommentAdded }: IdeaCardProps) {
   const detailsId = `idea-details-${idea.idea_id}`;
   const commentsId = `idea-comments-${idea.idea_id}`;
   // Opening the comments is independent of the details.
@@ -56,10 +58,11 @@ export function IdeaCard({ idea, canImprove = false, originalTitle, expanded, on
           <button type="button" className="btn btn-secondary" aria-expanded={expanded} aria-controls={detailsId} onClick={onToggleDetails}>
             {expanded ? 'Hide details' : 'Details'}
           </button>
-          {/* Only when there are comments (US-7); confidential ideas never have any. */}
-          {showsCommentsButton(idea) && (
+          {/* US-7: "Show comments (N)" when there are comments, "Comment" when there are none;
+              confidential ideas get no comments, so no button. */}
+          {allowsComments(idea) && (
             <button type="button" className="btn btn-secondary" aria-expanded={commentsOpen} aria-controls={commentsId} onClick={() => setCommentsOpen(!commentsOpen)}>
-              {commentsButtonLabel(commentsOpen, idea.comment_count)}
+              {idea.comment_count > 0 ? commentsButtonLabel(commentsOpen, idea.comment_count) : 'Comment'}
             </button>
           )}
           {canImprove && (
@@ -102,7 +105,7 @@ export function IdeaCard({ idea, canImprove = false, originalTitle, expanded, on
           <IdeaDetails ideaId={idea.idea_id} onReviewed={onReviewed} />
         </div>
       )}
-      {commentsOpen && showsCommentsButton(idea) && <IdeaComments idea={idea} />}
+      {commentsOpen && allowsComments(idea) && <IdeaComments idea={idea} onChanged={() => onCommentAdded?.()} />}
     </article>
   );
 }

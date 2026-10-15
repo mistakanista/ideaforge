@@ -68,6 +68,13 @@ export interface Comment {
   created_at: string;
 }
 
+/** A new comment on an idea, or an answer to another comment. */
+export interface NewCommentInput {
+  idea_id: number;
+  parent_comment_id: number | null;
+  body: string;
+}
+
 /** A comment as shown in the list: with the author's name, and whether the viewer wrote it. */
 export interface CommentItem extends Comment {
   author_name: string;

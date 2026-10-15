@@ -12,6 +12,7 @@ import {
   USER_COLUMNS,
   CATEGORY_COLUMNS,
   toCategory,
+  toCommentError,
   toCommentItem,
   toCategoryError,
   type CategoryRow,
@@ -149,6 +150,15 @@ export const supabaseRepository: IdeaRepository = {
     ]);
     if (error) throw toAppError(error);
     return data.map((row) => toCommentItem(row, ownId));
+  },
+
+  async addComment(input) {
+    // The author and the time are set by the database (trigger comment_check), which also rejects
+    // comments on confidential ideas and answers on another idea.
+    const { error } = await getSupabaseClient()
+      .from('comment')
+      .insert({ idea_id: input.idea_id, parent_comment_id: input.parent_comment_id, body: input.body });
+    if (error) throw toCommentError(error, 'add');
   },
 
   async listUsers(): Promise<AppUser[]> {

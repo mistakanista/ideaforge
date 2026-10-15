@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { CommentItem } from '../types';
-import { allowsComments, buildThreads, commentAuthorLabel, commentsButtonLabel, countNodes, showsCommentsButton } from './commentRules';
+import { allowsComments, buildThreads, commentAuthorLabel, commentRuleViolation, commentsButtonLabel, commentTextError, countNodes, showsCommentsButton } from './commentRules';
 
 function comment(id: number, parent: number | null, at: string, extra: Partial<CommentItem> = {}): CommentItem {
   return { comment_id: id, idea_id: 1, author_id: 5, parent_comment_id: parent, body: `c${id}`, created_at: at, author_name: 'Sam', by_me: false, ...extra };
@@ -59,5 +59,29 @@ describe('commentAuthorLabel', () => {
     expect(commentAuthorLabel(comment(1, null, 'x', { by_me: true }), anonymousIdea)).toBe('Sam');
     expect(commentAuthorLabel(comment(1, null, 'x', { author_id: 6 }), anonymousIdea)).toBe('Sam');
     expect(commentAuthorLabel(comment(1, null, 'x'), { submitter_id: 5, is_anonymous: false })).toBe('Sam');
+  });
+});
+
+describe('commentTextError', () => {
+  it('rejects an empty or blank comment and one over 2000 characters', () => {
+    expect(commentTextError('   ')).toBe('Please write a comment.');
+    expect(commentTextError('x'.repeat(2001))).toBe('A comment can have at most 2000 characters.');
+  });
+  it('accepts 1 to 2000 characters, not counting surrounding spaces', () => {
+    expect(commentTextError(' a ')).toBeNull();
+    expect(commentTextError('x'.repeat(2000))).toBeNull();
+  });
+});
+
+describe('commentRuleViolation', () => {
+  it('rejects comments on confidential ideas', () => {
+    expect(commentRuleViolation({ is_confidential: true }, null, 1, 'Hi')).toBe('Confidential ideas cannot get comments');
+  });
+  it('rejects an answer to a comment of another idea', () => {
+    expect(commentRuleViolation({ is_confidential: false }, { idea_id: 2 }, 1, 'Hi')).toBe('The comment you answer does not belong to this idea');
+  });
+  it('accepts comments and answers on the same idea', () => {
+    expect(commentRuleViolation({ is_confidential: false }, null, 1, 'Hi')).toBeNull();
+    expect(commentRuleViolation({ is_confidential: false }, { idea_id: 1 }, 1, 'Hi')).toBeNull();
   });
 });

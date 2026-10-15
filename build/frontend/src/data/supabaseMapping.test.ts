@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { RuleViolation } from './repository';
-import { lastReviewedAt, NO_VOTES, toAppError, toIdea, toListItem, toReviewDetails, toVoteInfo, toAppUser, roleUpdateError, toCategory, toCategoryError, type IdeaRow, type TransitionRow } from './supabaseMapping';
+import { lastReviewedAt, NO_VOTES, toAppError, toIdea, toListItem, toReviewDetails, toVoteInfo, toAppUser, roleUpdateError, toCategory, toCategoryError, toCommentError, type IdeaRow, type TransitionRow } from './supabaseMapping';
 
 const row: IdeaRow = {
   idea_id: 61,
@@ -204,5 +204,19 @@ describe('categories', () => {
   });
   it('falls back to the general messages', () => {
     expect(toCategoryError({ code: '42501', message: 'denied' }).message).toBe('You are not allowed to do this.');
+  });
+});
+
+describe('toCommentError', () => {
+  it('explains a comment text that breaks the length rule and a missing comment', () => {
+    expect(toCommentError({ code: '23514', message: 'check' }, 'add').message).toBe('Please write a comment of 1 to 2000 characters.');
+    expect(toCommentError({ code: '23503', message: 'fk' }, 'add').message).toBe('The comment you answer does not exist.');
+  });
+  it('explains that a comment with answers cannot be deleted', () => {
+    expect(toCommentError({ code: '23503', message: 'fk' }, 'delete').message).toBe('This comment has answers and cannot be deleted.');
+  });
+  it('keeps the messages of the database rules and falls back to the general ones', () => {
+    expect(toCommentError({ code: 'P0001', message: 'Confidential ideas cannot get comments' }, 'add').message).toBe('Confidential ideas cannot get comments');
+    expect(toCommentError({ code: '42501', message: 'denied' }, 'add').message).toBe('You are not allowed to do this.');
   });
 });

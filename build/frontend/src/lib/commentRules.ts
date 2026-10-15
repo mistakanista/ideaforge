@@ -2,6 +2,9 @@
 import type { CommentItem, IdeaListItem } from '../types';
 import { ANONYMOUS_LABEL } from './anonymity';
 
+/** Longest comment text (same limit as the database). */
+export const MAX_COMMENT_LENGTH = 2000;
+
 /** Top-level comments per page; their answers are shown below them on the same page. */
 export const COMMENTS_PER_PAGE = 10;
 
@@ -55,4 +58,27 @@ export function commentAuthorLabel(
 /** Number of comments and answers in a tree. */
 export function countNodes(nodes: CommentNode[]): number {
   return nodes.reduce((sum, n) => sum + 1 + countNodes(n.replies), 0);
+}
+
+/** Message for a comment text that breaks a rule of the database (empty or too long), otherwise null. */
+export function commentTextError(body: string): string | null {
+  const length = body.trim().length;
+  if (length === 0) return 'Please write a comment.';
+  if (length > MAX_COMMENT_LENGTH) return `A comment can have at most ${MAX_COMMENT_LENGTH} characters.`;
+  return null;
+}
+
+/**
+ * Message for a new comment that breaks a rule of the database trigger comment_check(), otherwise null.
+ * parent is the comment that is answered, if any.
+ */
+export function commentRuleViolation(
+  idea: Pick<IdeaListItem, 'is_confidential'>,
+  parent: Pick<CommentItem, 'idea_id'> | null,
+  ideaId: number,
+  body: string,
+): string | null {
+  if (!allowsComments(idea)) return 'Confidential ideas cannot get comments';
+  if (parent && parent.idea_id !== ideaId) return 'The comment you answer does not belong to this idea';
+  return commentTextError(body);
 }

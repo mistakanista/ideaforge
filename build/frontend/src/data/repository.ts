@@ -8,6 +8,7 @@ import type {
   Idea,
   IdeaDetails,
   IdeaListItem,
+  NewCommentInput,
   NewIdeaInput,
   ReviewInput,
   UserRole,
@@ -30,6 +31,9 @@ export interface IdeaRepository {
 
   /** All comments and answers of an idea, oldest first; empty if the idea is not visible for the viewer. */
   listComments(ideaId: number, viewer: AppUser): Promise<CommentItem[]>;
+
+  /** Adds a comment, or an answer when parent_comment_id is set; author and time are set by the data source. */
+  addComment(input: NewCommentInput, author: AppUser): Promise<void>;
 
   listUsers(): Promise<AppUser[]>;
   /** Admins only; the last active admin cannot be downgraded. */

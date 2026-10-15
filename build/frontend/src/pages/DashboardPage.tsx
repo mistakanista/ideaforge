@@ -164,6 +164,7 @@ export function DashboardPage() {
               voting={voting === idea.idea_id}
               voteError={voteError?.ideaId === idea.idea_id ? voteError.message : null}
               onReviewed={() => void loadIdeas()}
+              onCommentAdded={() => void loadIdeas()}
             />
           ))}
         </div>

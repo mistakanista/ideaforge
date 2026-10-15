@@ -5,6 +5,7 @@ import { submitterLabel } from '../lib/anonymity';
 import { canSeeIdea } from '../lib/ideaQuery';
 import { canReview, nextStage } from '../lib/reviewRules';
 import { resubmitRuleViolation } from '../lib/resubmitRules';
+import { commentRuleViolation } from '../lib/commentRules';
 import { voteRuleViolation } from '../lib/voteRules';
 import { upsertUserByEmail, type SessionProfile } from '../lib/sessionUser';
 import type { AppUser, Category, Idea, IdeaDetails, IdeaListItem, ReviewerScorecard } from '../types';
@@ -233,6 +234,26 @@ export const mockRepository: IdeaRepository = {
       .filter((c) => c.idea_id === ideaId)
       .map((c) => ({ ...c, author_name: userName(db, c.author_id), by_me: c.author_id === viewer.user_id }))
       .sort((a, b) => a.created_at.localeCompare(b.created_at) || a.comment_id - b.comment_id);
+  },
+
+  async addComment(input, author) {
+    const db = load();
+    const idea = db.ideas.find((i) => i.idea_id === input.idea_id);
+    // Same visibility as the idea policy: other people's confidential ideas do not exist.
+    if (!idea || !canSeeIdea(idea, author)) throw new RuleViolation(`Idea ${input.idea_id} does not exist`);
+    const parent = input.parent_comment_id === null ? null : (db.comments.find((c) => c.comment_id === input.parent_comment_id) ?? null);
+    if (input.parent_comment_id !== null && !parent) throw new RuleViolation('The comment you answer does not exist');
+    const violation = commentRuleViolation(idea, parent, input.idea_id, input.body);
+    if (violation) throw new RuleViolation(violation);
+    db.comments.push({
+      comment_id: db.comments.reduce((max, c) => Math.max(max, c.comment_id), 0) + 1,
+      idea_id: input.idea_id,
+      author_id: author.user_id,
+      parent_comment_id: input.parent_comment_id,
+      body: input.body.trim(),
+      created_at: new Date().toISOString(),
+    });
+    save(db);
   },
 
   async listUsers() {
