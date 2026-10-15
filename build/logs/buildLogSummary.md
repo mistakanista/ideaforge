@@ -121,3 +121,17 @@ Builder: Gernot · Checked by: Uli
 - What went wrong, and how we fixed it: nothing
 - What we learned about building with AI: Claude works reliable
 - Saved version: US-11 update buildLogSummary
+
+## 15.10.2026 · User story 7 : add comments
+Builder: Gernot · Checked by: Uli
+
+- What we asked for: user story US-7: add comments
+- What the AI changed:
+  - added supabase rules and added comment field to the idea table, added seed data
+  - added frontend changes: comment form, comment list
+- How we checked it:
+  - Supabase: checked the comment table
+  - Frontend: created a comment and checked it with another user
+- What went wrong, and how we fixed it: nothing
+- What we learned about building with AI: Claude had no problems with this task 
+- Saved version: US-7 update buildLogSummary
