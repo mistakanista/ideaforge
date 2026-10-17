@@ -21,10 +21,10 @@ Workflow for creating, scoring and implementing ideas
 - Github and Supabase
 - local as fallback and for development
 
-##Data
+## Data
 - Full model: see design/datModel.md
 
-##Screens and design rules
+## Screens and design rules
 - it should work on screens and phones
 - signature color is T&R copper (`#B9470C`) for buttons and links
 - T&R navy (`#1B2A41`) for headers
