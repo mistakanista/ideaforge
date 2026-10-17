@@ -135,3 +135,18 @@ Builder: Gernot · Checked by: Uli
 - What went wrong, and how we fixed it: nothing
 - What we learned about building with AI: Claude had no problems with this task 
 - Saved version: US-7 update buildLogSummary
+
+## 17.10.2026 · User story 10 : deploy the app on a public, free domain
+Builder: Gernot · Checked by: Uli
+
+- What we asked for: user story US-10: deploy the app on a public, free domain
+- What the AI changed:
+  - added netlify.toml file
+  - added instructions for the deployment on Netlify
+- How we checked it:
+  - we triggered the deployment on Netlify
+  - we added the environment variables to the Netlify project
+- What went wrong, and how we fixed it: 
+  - the Google redirect URL still pointed to the localhost, we added another redirect target in Supabase
+- What we learned about building with AI: here Claude did not build so much, but advised us to setup a Netlify projedt and deployment
+- Saved version: US-10 update toml file

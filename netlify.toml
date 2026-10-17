@@ -5,6 +5,9 @@
 
 [build.environment]
   NODE_VERSION = "22"
+  # VITE_* values are public by design (compiled into the browser bundle; the anon key is protected by RLS).
+  # Without this the secrets scan fails the build, because the values appear in dist/ and in ordinary words in the code.
+  SECRETS_SCAN_OMIT_KEYS = "VITE_AUTH_SOURCE,VITE_DATA_SOURCE,VITE_SUPABASE_URL,VITE_SUPABASE_ANON_KEY"
 
 # Single-page app: every path is served by index.html (React Router decides what to show).
 [[redirects]]
