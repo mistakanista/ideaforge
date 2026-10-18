@@ -51,6 +51,7 @@ Workflow for creating, scoring and implementing ideas
 - Never add features that aren't in our requirements.
 - After each change, update the build log in build/logs/buildLog.md.
 - Please add also the time to the build log
+- No passwords or secrets in the source code, that could be committed or pushed
 
 ## Project state and how to work (as of 2026-10-10)
 
@@ -75,7 +76,7 @@ Workflow for creating, scoring and implementing ideas
 - Sign-in is restricted by the table `login_allowlist` (`@tallis.uk` plus single developer Gmail addresses), maintained in the SQL editor.
 - `must_change_password` marks users with the initial password; a trigger clears it when the password really changes.
 - Passwords live only in Supabase Auth (bcrypt). There is no password column.
-- Demo users: `firstname.lastname@tallis.uk`, initial password `tallis123`.
+- Demo users: `firstname.lastname@tallis.uk`
   - 12 users from the prototype plus the client admin Dev Anand (ADMIN).
   - Reviewers: Ruth Evans, Tom Hallworth, Aisha Rahman.
   - Priya Shah is ADMIN locally, STAFF in the cloud.
@@ -99,12 +100,3 @@ Workflow for creating, scoring and implementing ideas
 
   `npx supabase test db` does not work here, because Docker cannot read files from the Documents folder.
 - Browser tests: only against the local Supabase (`npm run dev:localdb`). Never type passwords into the cloud project.
-
-### User stories
-- US-0 Login: in review.
-- Open points:
-  - Step 1b: ban deactivated users in Supabase Auth; today the app signs them out again.
-  - Office selection or change after the first login (postponed).
-  - Story text: the "password field" criterion is fulfilled by Supabase Auth; the proposed additional acceptance criteria are not added yet.
-  - Supabase "Confirm email" and minimum password length are known limitations (`build/supabase/README.md`).
-- Next candidates: `supabaseRepository` for ideas (`VITE_DATA_SOURCE=supabase`), the `idea` table with `is_confidential`, and the remaining user stories.

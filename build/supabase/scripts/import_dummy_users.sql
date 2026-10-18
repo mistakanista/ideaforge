@@ -1,10 +1,11 @@
 -- =====================================================================
 -- IdeaForge: import the dummy users into the CLOUD project (US-0).
--- Run once in the Supabase dashboard: SQL Editor -> paste this file -> Run.
+-- Run once in the Supabase dashboard: SQL Editor -> paste this file -> replace <INITIAL_PASSWORD> -> Run.
+-- Do not save the edited text and never commit the password.
 -- Safe to run again: users whose email already exists are skipped.
 --
 -- Same users as seed.sql (local): the 12 dummy users and the client admin Dev Anand, with two differences:
---   * Priya Shah stays STAFF, because the initial password tallis123 is public.
+--   * Priya Shah stays STAFF, because the initial password was shared in the project documents.
 --     After her password has been changed, an existing admin promotes her:
 --       update public.app_user
 --          set role = 'ADMIN',
@@ -12,8 +13,8 @@
 --        where email = 'priya.shah@tallis.uk';
 --   * Dev Anand (client admin) and the reviewer roles are granted by the existing admin
 --     of the project (the script stops if there is no active admin yet).
---     Sign in as dev.anand@tallis.uk right after the import to replace the public initial password.
--- All users must change the password tallis123 at their first login (must_change_password).
+--     Sign in as dev.anand@tallis.uk right after the import to replace the initial password.
+-- All users must change the initial password at their first login (must_change_password).
 -- =====================================================================
 
 do $$
@@ -48,7 +49,7 @@ begin
       confirmation_token, recovery_token, email_change, email_change_token_new
     ) values (
       '00000000-0000-0000-0000-000000000000', v_id, 'authenticated', 'authenticated', v_email,
-      extensions.crypt('tallis123', extensions.gen_salt('bf')), now(),
+      extensions.crypt('<INITIAL_PASSWORD>', extensions.gen_salt('bf')), now(),
       '{"provider": "email", "providers": ["email"]}', jsonb_build_object('full_name', u.full_name),
       now(), now(), '', '', '', ''
     );
