@@ -66,7 +66,7 @@ function Footer() {
   const { status, refreshUsers } = useCurrentUser();
   const navigate = useNavigate();
   const [resetting, setResetting] = useState(false);
-
+  const MOCK = (import.meta.env.VITE_DATA_SOURCE ?? 'mock') === 'mock';
   async function reset() {
     if (!window.confirm('Reset all demo data? Ideas, votes and changes you made will be lost.')) return;
     setResetting(true);
@@ -76,6 +76,8 @@ function Footer() {
     navigate('/dashboard', { replace: true });
     window.location.reload();
   }
+
+  if (!MOCK) return null;
 
   return (
     <footer className="site-footer">

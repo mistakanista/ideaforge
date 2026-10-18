@@ -139,9 +139,9 @@ export function IdeaDetails({ ideaId, onReviewed }: { ideaId: number; onReviewed
                       : `Moved to ${STAGE_BY_CODE[entry.to_stage].label}`}
                 </strong>
                 {entry.reason && <p>{entry.reason}</p>}
-                <span className="muted small">
+                <div className="muted small">
                   {entry.changed_by_name} · {formatDate(entry.changed_at)}
-                </span>
+                </div>
               </div>
             </li>
           ))}
