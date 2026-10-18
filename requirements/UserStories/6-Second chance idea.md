@@ -6,3 +6,5 @@ As an employee of Tallis & Reeve, I want a second chance after my ideas have bee
 - [x] Declined ideas with no entry in resubmission_of can be sent once  more
 - [x] On clicking the button "improve idea", the idea is loaded in the idea form and can there be edited and resend
 - [x] in the resent idea the title of the original idea is shown as reference
+
+## Status: review

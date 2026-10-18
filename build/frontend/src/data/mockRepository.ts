@@ -70,6 +70,12 @@ function toListItem(db: Database, idea: Idea, viewer: AppUser): IdeaListItem {
     .filter((h) => h.idea_id === idea.idea_id && h.from_stage !== null)
     .map((h) => h.changed_at)
     .sort();
+  // Last activity: idea submitted, every stage change (also the first entry) and every comment.
+  const activityTimes = [
+    idea.created_at,
+    ...db.history.filter((h) => h.idea_id === idea.idea_id).map((h) => h.changed_at),
+    ...db.comments.filter((c) => c.idea_id === idea.idea_id).map((c) => c.created_at),
+  ];
   return {
     ...idea,
     category_name: category?.name ?? 'Unknown',
@@ -80,6 +86,7 @@ function toListItem(db: Database, idea: Idea, viewer: AppUser): IdeaListItem {
     comment_count: db.comments.filter((c) => c.idea_id === idea.idea_id).length,
     submitted_by_me: idea.submitter_id === viewer.user_id,
     last_reviewed_at: reviewTimes.length > 0 ? reviewTimes[reviewTimes.length - 1] : null,
+    last_activity_at: activityTimes.sort()[activityTimes.length - 1],
   };
 }
 

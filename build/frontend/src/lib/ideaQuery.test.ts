@@ -24,6 +24,7 @@ function idea(id: number, overrides: Partial<IdeaListItem> = {}): IdeaListItem {
     voted_by_me: false,
     submitted_by_me: false,
     last_reviewed_at: null,
+    last_activity_at: `2026-09-${String(id).padStart(2, '0')}T10:00:00.000Z`,
     ...overrides,
   };
 }
@@ -114,6 +115,15 @@ describe('sortIdeas', () => {
       idea(5, { last_reviewed_at: '2026-09-20T09:00:00.000Z' }),
     ];
     expect(sortIdeas(mixed, 'reviewed').map((i) => i.idea_id)).toEqual([3, 1, 5, 4, 2]);
+  });
+  it('puts the most recently changed ideas first, newest first on a tie', () => {
+    const mixed = [
+      idea(1, { last_activity_at: '2026-10-05T09:00:00.000Z' }),
+      idea(2),
+      idea(3, { last_activity_at: '2026-10-05T09:00:00.000Z' }),
+      idea(4, { last_activity_at: '2026-10-07T09:00:00.000Z' }),
+    ];
+    expect(sortIdeas(mixed, 'changed').map((i) => i.idea_id)).toEqual([4, 3, 1, 2]);
   });
 });
 

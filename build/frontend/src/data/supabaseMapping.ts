@@ -56,8 +56,8 @@ export interface IdeaRow {
   submitter?: { display_name: string } | null;
   /** Embedded rows of public.vote (see 20261011135710_vote.sql); RLS returns them only for visible ideas. */
   vote?: { user_id: number }[] | null;
-  /** Embedded ids of public.comment (see 20261015220429_comment.sql), only to count them; RLS returns them only for visible ideas. */
-  comment?: { comment_id: number }[] | null;
+  /** Embedded times of public.comment (see 20261015220429_comment.sql), to count them and for "Last changed first"; RLS returns them only for visible ideas. */
+  comment?: { created_at: string }[] | null;
   /** Embedded times of the idea's rows in public.idea_transition (for "Last reviewed first"). */
   idea_transition?: { created_at: string }[] | null;
 }
@@ -95,6 +95,16 @@ export function toIdea(row: IdeaRow): Idea {
   };
 }
 
+/** Latest of the idea's creation, its reviews and its comments (for "Last changed first"). */
+export function lastActivityAt(
+  createdAt: string,
+  transitions: { created_at: string }[] | null | undefined,
+  comments: { created_at: string }[] | null | undefined,
+): string {
+  const times = [...(transitions ?? []), ...(comments ?? [])].map((r) => r.created_at);
+  return times.reduce((latest, t) => (new Date(t) > new Date(latest) ? t : latest), createdAt);
+}
+
 /** Time of the latest review of an idea, or null if it was never reviewed. */
 export function lastReviewedAt(transitions: { created_at: string }[] | null | undefined): string | null {
   return (transitions ?? []).reduce<string | null>(
@@ -115,6 +125,7 @@ export function toListItem(row: IdeaRow, votes: VoteInfo = NO_VOTES, ownUserId: 
     comment_count: row.comment?.length ?? 0,
     submitted_by_me,
     last_reviewed_at: lastReviewedAt(row.idea_transition),
+    last_activity_at: lastActivityAt(row.created_at, row.idea_transition, row.comment),
   };
 }
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { RuleViolation } from './repository';
-import { lastReviewedAt, NO_VOTES, toAppError, toIdea, toListItem, toReviewDetails, toVoteInfo, toAppUser, roleUpdateError, toCategory, toCategoryError, toCommentError, type IdeaRow, type TransitionRow } from './supabaseMapping';
+import { lastActivityAt, lastReviewedAt, NO_VOTES, toAppError, toIdea, toListItem, toReviewDetails, toVoteInfo, toAppUser, roleUpdateError, toCategory, toCategoryError, toCommentError, type IdeaRow, type TransitionRow } from './supabaseMapping';
 
 const row: IdeaRow = {
   idea_id: 61,
@@ -26,6 +26,19 @@ describe('toIdea', () => {
     expect(idea).toMatchObject({ idea_id: 61, title: 'Shared car pool', is_confidential: true, current_stage: 'SUBMITTED' });
     expect(idea).not.toHaveProperty('category');
     expect(idea).not.toHaveProperty('office');
+  });
+});
+
+describe('lastActivityAt', () => {
+  const created = '2026-09-01T10:00:00+00:00';
+  it('is the creation time without reviews and comments', () => {
+    expect(lastActivityAt(created, [], undefined)).toBe(created);
+  });
+  it('is the latest of creation, reviews and comments', () => {
+    const reviews = [{ created_at: '2026-09-10T10:00:00+00:00' }];
+    const comments = [{ created_at: '2026-09-20T10:00:00+00:00' }, { created_at: '2026-09-15T10:00:00+00:00' }];
+    expect(lastActivityAt(created, reviews, comments)).toBe('2026-09-20T10:00:00+00:00');
+    expect(lastActivityAt(created, reviews, [])).toBe('2026-09-10T10:00:00+00:00');
   });
 });
 

@@ -10,5 +10,6 @@ As an employee, reviewer or admin of Tallis & Reeve, I want to see, browse and f
 - [+] There is a filter option for votes
 - [+] There is a filter or search option for users, especially I want to filter my ideas
 - [+] There is a sorting for most voted, newest, last reviewed and never reviewed or oldest ideas on top
+- [+] There is a sorting "Last changed first" that puts ideas with the most recent activity on top (new idea, review or new comment)
 
 ## Status: passed

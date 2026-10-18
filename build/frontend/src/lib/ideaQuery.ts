@@ -3,9 +3,9 @@
 import { hidesSubmitter } from './anonymity';
 import type { AppUser, Idea, IdeaListItem, IdeaStage, OfficeCode } from '../types';
 
-export type SortOrder = 'newest' | 'oldest' | 'votes' | 'reviewed';
+export type SortOrder = 'newest' | 'oldest' | 'votes' | 'reviewed' | 'changed';
 
-export const SORT_ORDERS: readonly SortOrder[] = ['newest', 'oldest', 'votes', 'reviewed'];
+export const SORT_ORDERS: readonly SortOrder[] = ['newest', 'oldest', 'votes', 'reviewed', 'changed'];
 
 /** null = active ideas only (the default list), 'ALL' = every stage. */
 export type StageFilter = IdeaStage | 'ALL' | null;
@@ -97,10 +97,16 @@ function lastReviewedFirst(a: IdeaListItem, b: IdeaListItem): number {
   return b.last_reviewed_at.localeCompare(a.last_reviewed_at);
 }
 
+/** Latest activity first (new idea, review or comment); ties newest first. */
+function lastChangedFirst(a: IdeaListItem, b: IdeaListItem): number {
+  return b.last_activity_at.localeCompare(a.last_activity_at) || newestFirst(a, b);
+}
+
 export function sortIdeas(items: IdeaListItem[], sort: SortOrder): IdeaListItem[] {
   const sorted = [...items];
   if (sort === 'votes') sorted.sort((a, b) => b.vote_count - a.vote_count || newestFirst(a, b));
   else if (sort === 'reviewed') sorted.sort(lastReviewedFirst);
+  else if (sort === 'changed') sorted.sort(lastChangedFirst);
   else if (sort === 'oldest') sorted.sort((a, b) => newestFirst(b, a));
   else sorted.sort(newestFirst);
   return sorted;

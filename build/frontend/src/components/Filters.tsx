@@ -90,6 +90,7 @@ export function Filters({ filters, categories, counts, submitters, onChange }: F
             <option value="oldest">Oldest first</option>
             <option value="votes">Most votes first</option>
             <option value="reviewed">Last reviewed first</option>
+            <option value="changed">Last changed first</option>
           </select>
         </div>
       </div>

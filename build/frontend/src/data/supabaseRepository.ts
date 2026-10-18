@@ -30,10 +30,10 @@ import {
 } from './supabaseMapping';
 import { getSupabaseClient } from './supabaseClient';
 
-// Votes (user_id only), comment ids and review times are embedded, so vote count, "voted by me",
-// comment count and the last review time need no extra request.
+// Votes (user_id only), comment times and review times are embedded, so vote count, "voted by me",
+// comment count, the last review time and the last activity need no extra request.
 const IDEA_WITH_NAMES =
-  `${IDEA_COLUMNS}, category(name), submitter:app_user!idea_submitter_id_fkey(display_name), vote(user_id), comment(comment_id), ` +
+  `${IDEA_COLUMNS}, category(name), submitter:app_user!idea_submitter_id_fkey(display_name), vote(user_id), comment(created_at), ` +
   'idea_transition(created_at)';
 
 /** The signed-in user's own app_user.user_id, which differs from the mock user id. */

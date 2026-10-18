@@ -108,6 +108,8 @@ export interface IdeaListItem extends Idea {
   submitted_by_me: boolean;
   /** Time of the latest review (stage change or decline); null if the idea was never reviewed. */
   last_reviewed_at: string | null;
+  /** Latest of: idea submitted, review (stage change or decline) and comment; never null. */
+  last_activity_at: string;
 }
 
 /**
