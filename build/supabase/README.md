@@ -45,6 +45,13 @@ This runs the 15 unit tests for filters, sorting, visibility and pagination. Exp
 
 Tip: if supabase start complains that a port is in use, another Supabase or app is using it. npx supabase stop fixes the first case; otherwise close the other app.
 
+## Sending email (US-8, step 1)
+The Edge Function `functions/send-email` sends one mail through Gmail (`nodemailer`, `smtp.gmail.com`, port 465, because Edge Functions block ports 25 and 587). Only addresses in `MAIL_REAL_RECIPIENTS` really receive it; every other address is only simulated (logged, nothing sent).
+- Secrets: `EMAIL`, `EMAIL_PASSWORD` (Google app password), `MAIL_FUNCTION_SECRET` (callers send it in the header `x-mail-secret`), `MAIL_REAL_RECIPIENTS`. Locally in `functions/.env` (git-ignored, template `functions/.env.example`); in the cloud with `npx supabase secrets set NAME=value` or in the dashboard under Edge Functions, Secrets. Never in code.
+- Local test, in `build/`: `npx supabase functions serve --env-file supabase/functions/.env`, then
+  `curl -s -X POST http://127.0.0.1:54321/functions/v1/send-email -H "x-mail-secret: <secret>" -H "Content-Type: application/json" -d '{"to":"gernotschulmeister28@gmail.com","subject":"Test","text":"Hello"}'` returns `sent`; another address returns `simulated`; a wrong secret returns 401.
+- Cloud deploy (not done by the GitHub integration): `npx supabase functions deploy send-email`.
+
 ## Tables (public schema)
 - `app_user`, `login_allowlist`: users, roles and sign-in rules (US-0).
 - `category`: the four idea categories, created by the migration (also in the cloud). Signed-in users can read them. Only admins can add categories and change name, description and `is_active` (migration `20261012193813_category_admin_write.sql`, US-5); categories are never deleted, only marked inactive, and `sort_order` and `category_id` cannot be changed through the API. The trigger trims name and description and puts a new category at the end of the list. Names stay unique, ignoring case. Tests: `tests/category_test.sql` (20).

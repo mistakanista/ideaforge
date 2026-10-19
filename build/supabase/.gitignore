@@ -6,3 +6,6 @@
 .env.keys
 .env.local
 .env.*.local
+
+# Local secrets of the Edge Functions (never commit)
+functions/.env
