@@ -26,9 +26,16 @@ export function inDigestWindow(iso: string, asOf: string): boolean {
   return time >= end - DIGEST_DAYS * DAY_MS && time < end;
 }
 
-/** The test email is sent when the first day of a month is simulated. */
-export function isFirstOfMonth(day: string): boolean {
-  return /^\d{4}-\d{2}-01$/.test(day);
+/**
+ * The digest is sent on the first working day of a month (Monday to Friday; public holidays are not
+ * considered). The 1st is a Saturday: Monday the 3rd; a Sunday: Monday the 2nd. Same rule as
+ * is_first_working_day in migration 20261021100000.
+ */
+export function isFirstWorkingDayOfMonth(day: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return false;
+  const weekday = new Date(Date.parse(`${day.slice(0, 8)}01T00:00:00Z`)).getUTCDay(); // 0 = Sunday
+  const offset = weekday === 6 ? 2 : weekday === 0 ? 1 : 0;
+  return Number(day.slice(8)) === 1 + offset;
 }
 
 export type DigestCandidate = Omit<DigestEntry, 'total'> & { created_at: string };

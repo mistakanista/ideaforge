@@ -2,7 +2,7 @@
 // stage history and votes come from the database, where triggers and row level security enforce the
 // rules (see build/supabase/migrations). The user list and role changes use app_user (US-5); category
 // changes use the category table (US-5); only the demo data reset is still taken from mockRepository.
-import type { AppUser, Category, CommentItem, DigestEntry, IdeaDetails } from '../types';
+import type { AppUser, Category, CommentItem, DigestEntry, DigestTestResult, IdeaDetails } from '../types';
 import { mockRepository } from './mockRepository';
 import { RuleViolation, type IdeaRepository } from './repository';
 import {
@@ -214,6 +214,13 @@ export const supabaseRepository: IdeaRepository = {
     const { data, error } = await getSupabaseClient().rpc('digest_top_ideas', { p_as_of: asOf });
     if (error) throw toAppError(error);
     return (data as DigestEntry[]).map((row) => ({ ...row, submitter_name: row.submitter_name ?? null }));
+  },
+
+  // Sends nothing unless the day is the first working day of its month (checked in the database).
+  async sendDigestTest(asOf): Promise<DigestTestResult> {
+    const { data, error } = await getSupabaseClient().rpc('send_digest_test', { p_as_of: asOf });
+    if (error) throw toAppError(error);
+    return data as DigestTestResult;
   },
 
   resetDemoData: () => mockRepository.resetDemoData(),

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { digestWindow, inDigestWindow, isFirstOfMonth, rankDigest, type DigestCandidate } from './digest';
+import { digestWindow, inDigestWindow, isFirstWorkingDayOfMonth, rankDigest, type DigestCandidate } from './digest';
 
 function candidate(idea_id: number, rating_sum: number, vote_count: number, created_at = '2026-01-01T00:00:00Z'): DigestCandidate {
   return {
@@ -20,11 +20,24 @@ describe('digest window', () => {
   });
 });
 
-describe('first day of the month', () => {
-  it('is recognised', () => {
-    expect(isFirstOfMonth('2026-11-01')).toBe(true);
-    expect(isFirstOfMonth('2026-11-02')).toBe(false);
-    expect(isFirstOfMonth('')).toBe(false);
+describe('first working day of the month', () => {
+  it('is the 1st when it is a weekday', () => {
+    expect(isFirstWorkingDayOfMonth('2026-10-01')).toBe(true); // Thursday
+    expect(isFirstWorkingDayOfMonth('2026-10-02')).toBe(false);
+  });
+  it('is the Monday the 3rd when the 1st is a Saturday', () => {
+    expect(isFirstWorkingDayOfMonth('2026-08-01')).toBe(false);
+    expect(isFirstWorkingDayOfMonth('2026-08-02')).toBe(false);
+    expect(isFirstWorkingDayOfMonth('2026-08-03')).toBe(true);
+  });
+  it('is the Monday the 2nd when the 1st is a Sunday', () => {
+    expect(isFirstWorkingDayOfMonth('2026-11-01')).toBe(false);
+    expect(isFirstWorkingDayOfMonth('2026-11-02')).toBe(true);
+    expect(isFirstWorkingDayOfMonth('2026-11-03')).toBe(false);
+  });
+  it('rejects an empty or invalid date', () => {
+    expect(isFirstWorkingDayOfMonth('')).toBe(false);
+    expect(isFirstWorkingDayOfMonth('2026-11')).toBe(false);
   });
 });
 

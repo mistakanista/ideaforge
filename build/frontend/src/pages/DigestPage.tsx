@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 import { RoleGuard } from '../components/RoleGuard';
 import { formatDate } from '../config';
 import { repository, RuleViolation } from '../data';
-import { DIGEST_DAYS, DIGEST_SIZE, digestWindow } from '../lib/digest';
+import { DIGEST_DAYS, DIGEST_SIZE, digestWindow, isFirstWorkingDayOfMonth } from '../lib/digest';
 import { useCurrentUser } from '../session/CurrentUser';
-import type { DigestEntry } from '../types';
+import type { DigestEntry, DigestTestResult } from '../types';
 
 function today(): string {
   const now = new Date();
@@ -13,11 +13,21 @@ function today(): string {
   return `${now.getFullYear()}-${month}-${day}`;
 }
 
+const TEST_RESULT_TEXT: Record<DigestTestResult, string> = {
+  QUEUED: 'The test email was handed over for sending. The result (sent or simulated) is in the email log.',
+  NOT_FIRST_WORKING_DAY: 'No email was sent: this is not the first working day of the month.',
+  NOT_CONFIGURED: 'No email was sent: the email settings are missing in the database (see the Supabase README).',
+  FAILED: 'The test email could not be sent. The reason is in the email log.',
+  PROTOTYPE: 'Prototype data: no email is sent. Use the Supabase data source to send the test email.',
+};
+
 function DigestContent() {
   const { user } = useCurrentUser();
   const [asOf, setAsOf] = useState(today);
   const [entries, setEntries] = useState<DigestEntry[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
+  const [testResult, setTestResult] = useState<DigestTestResult | null>(null);
 
   useEffect(() => {
     if (!user || !asOf) return;
@@ -36,6 +46,21 @@ function DigestContent() {
     };
   }, [asOf, user]);
 
+  async function sendTest() {
+    if (!user) return;
+    setSending(true);
+    setTestResult(null);
+    try {
+      setTestResult(await repository.sendDigestTest(asOf, user));
+      setError(null);
+    } catch (err) {
+      setError(err instanceof RuleViolation ? err.message : 'Something went wrong. Please try again.');
+    } finally {
+      setSending(false);
+    }
+  }
+
+  const firstWorkingDay = isFirstWorkingDayOfMonth(asOf);
   const window = asOf ? digestWindow(asOf) : null;
 
   return (
@@ -50,11 +75,27 @@ function DigestContent() {
         <h2 id="digest-date-heading">Simulated date</h2>
         <div className="field digest-date">
           <label htmlFor="digest-date">Date</label>
-          <input id="digest-date" type="date" value={asOf} onChange={(e) => setAsOf(e.target.value)} />
+          <input id="digest-date" type="date" value={asOf} onChange={(e) => {
+              setAsOf(e.target.value);
+              setTestResult(null);
+            }} />
         </div>
         {window && (
           <p className="muted" aria-live="polite">
             Reviews from {formatDate(window.from)} to {formatDate(window.lastDay)} are counted.
+          </p>
+        )}
+        <p className="muted">
+          {firstWorkingDay
+            ? 'This is the first working day of the month: the digest email is sent on this day.'
+            : 'The digest email is only sent on the first working day of a month (Monday to Friday).'}
+        </p>
+        <button type="button" className="btn btn-primary" onClick={() => void sendTest()} disabled={!firstWorkingDay || sending}>
+          Send test email
+        </button>
+        {testResult && (
+          <p className={testResult === 'QUEUED' ? 'success-line' : 'muted'} role="status">
+            {TEST_RESULT_TEXT[testResult]}
           </p>
         )}
       </section>

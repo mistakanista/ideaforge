@@ -146,6 +146,13 @@ export interface DigestEntry {
   total: number;
 }
 
+/**
+ * Result of the digest test email: nothing sent because the day is not the first working day of the
+ * month, settings missing, request queued (the email log shows SENT / SIMULATED / FAILED later),
+ * failed, or (prototype data source) no mail is sent at all.
+ */
+export type DigestTestResult = 'NOT_FIRST_WORKING_DAY' | 'NOT_CONFIGURED' | 'QUEUED' | 'FAILED' | 'PROTOTYPE';
+
 /** Everything shown after a click on "Details". */
 export interface IdeaDetails {
   idea: IdeaListItem;

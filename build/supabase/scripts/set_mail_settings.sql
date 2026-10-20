@@ -1,10 +1,11 @@
 -- =====================================================================
 -- IdeaForge: settings for the review emails (US-8). Run once per environment
 -- (local database and cloud project) in the SQL editor; run again to change a value.
--- Replace the three placeholders, run, and do NOT save the edited text or commit it.
+-- Replace the placeholders, run, and do NOT save the edited text or commit it.
 --   <FUNCTION_URL>  local: http://host.docker.internal:54321/functions/v1/send-email
 --                   cloud: https://owwdzjerddgavqjqxrru.supabase.co/functions/v1/send-email
 --   <MAIL_FUNCTION_SECRET>  the same value as the secret MAIL_FUNCTION_SECRET of the Edge Function
+--   <DIGEST_TEST_RECIPIENT>  address that gets the digest test mail (US-12); leave as '' to keep it unset
 --   <APP_URL>       link shown in the mail, for example the Netlify address (or leave the text as '' to omit)
 -- =====================================================================
 do $$
@@ -12,7 +13,8 @@ declare
   v_settings constant jsonb := jsonb_build_object(
     'mail_function_url', '<FUNCTION_URL>',
     'mail_function_secret', '<MAIL_FUNCTION_SECRET>',
-    'app_url', '<APP_URL>');
+    'app_url', '<APP_URL>',
+    'digest_test_recipient', '<DIGEST_TEST_RECIPIENT>');
   v_name  text;
   v_value text;
 begin

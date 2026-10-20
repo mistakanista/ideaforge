@@ -2,7 +2,7 @@
 // and enforces the same rules the database triggers will enforce later.
 import { SCORING_CRITERIA } from '../config';
 import { submitterLabel } from '../lib/anonymity';
-import { inDigestWindow, rankDigest } from '../lib/digest';
+import { inDigestWindow, isFirstWorkingDayOfMonth, rankDigest } from '../lib/digest';
 import { canSeeIdea } from '../lib/ideaQuery';
 import { canReview, nextStage } from '../lib/reviewRules';
 import { resubmitRuleViolation } from '../lib/resubmitRules';
@@ -355,6 +355,11 @@ export const mockRepository: IdeaRepository = {
         }];
       });
     return rankDigest(candidates);
+  },
+
+  async sendDigestTest(asOf, actor) {
+    requireAdmin(load(), actor);
+    return isFirstWorkingDayOfMonth(asOf) ? 'PROTOTYPE' : 'NOT_FIRST_WORKING_DAY';
   },
 
   async resetDemoData() {

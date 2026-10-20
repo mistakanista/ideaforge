@@ -6,6 +6,7 @@ import type {
   CommentItem,
   CategoryInput,
   DigestEntry,
+  DigestTestResult,
   Idea,
   IdeaDetails,
   IdeaListItem,
@@ -52,6 +53,12 @@ export interface IdeaRepository {
    * by review ratings plus votes (US-12). No confidential or declined ideas.
    */
   getDigest(asOf: string, actor: AppUser): Promise<DigestEntry[]>;
+
+  /**
+   * Admins only: sends the digest test email for the simulated day `asOf` if it is the first working
+   * day of its month (US-12); otherwise nothing is sent.
+   */
+  sendDigestTest(asOf: string, actor: AppUser): Promise<DigestTestResult>;
 
   /** Prototype only: restore the demo data. */
   resetDemoData(): Promise<void>;
