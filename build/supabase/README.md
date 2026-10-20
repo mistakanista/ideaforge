@@ -52,6 +52,13 @@ The Edge Function `functions/send-email` sends one mail through Gmail (`nodemail
   `curl -s -X POST http://127.0.0.1:54321/functions/v1/send-email -H "x-mail-secret: <secret>" -H "Content-Type: application/json" -d '{"to":"gernotschulmeister28@gmail.com","subject":"Test","text":"Hello"}'` returns `sent`; another address returns `simulated`; a wrong secret returns 401.
 - Cloud deploy (not done by the GitHub integration): `npx supabase functions deploy send-email`.
 
+## Review emails (US-8, step 2)
+Migration `20261020203000_idea_review_email.sql`: after every review made through the API (not by imports or SQL scripts) the trigger `notify_submitter_after_review()` writes a row to `email_log` and asks the Edge Function `send-email` (through `pg_net`, asynchronous) to mail the submitter. The mail names the idea, the new stage, the scores or the decline reason, but not the reviewer. A problem with the mail never blocks the review. The function decides who really gets a mail (`MAIL_REAL_RECIPIENTS`) and sets the log status: `SENT`, `SIMULATED`, `FAILED`; `PENDING` means no answer yet, `NOT_CONFIGURED` means the settings below are missing. Only admins can read `email_log`.
+- Settings per environment (once, in the SQL editor, not saved or committed): `scripts/set_mail_settings.sql` stores `mail_function_url`, `mail_function_secret` (same value as the function secret `MAIL_FUNCTION_SECRET`) and the optional `app_url` in the Vault. Local URL: `http://host.docker.internal:54321/functions/v1/send-email`.
+- Redeploy the function after changes (it now also updates `email_log`): `npx supabase functions deploy send-email`.
+- Locally `db reset` does not store these settings, so run the script again after a reset.
+- Tests: `tests/idea_review_email_test.sql` (18).
+
 ## Tables (public schema)
 - `app_user`, `login_allowlist`: users, roles and sign-in rules (US-0).
 - `category`: the four idea categories, created by the migration (also in the cloud). Signed-in users can read them. Only admins can add categories and change name, description and `is_active` (migration `20261012193813_category_admin_write.sql`, US-5); categories are never deleted, only marked inactive, and `sort_order` and `category_id` cannot be changed through the API. The trigger trims name and description and puts a new category at the end of the list. Names stay unique, ignoring case. Tests: `tests/category_test.sql` (20).

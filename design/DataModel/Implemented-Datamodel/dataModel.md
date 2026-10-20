@@ -21,6 +21,7 @@ erDiagram
     IDEA ||--o{ COMMENT : "gets (never confidential)"
     APP_USER ||--o{ COMMENT : writes
     COMMENT |o--o{ COMMENT : "answered by"
+    IDEA_TRANSITION ||--o| EMAIL_LOG : "mail after review"
 
     AUTH_USERS {
         uuid id PK "Supabase Auth, holds the password"
@@ -90,6 +91,16 @@ erDiagram
         bigint author_id FK "set by trigger"
         bigint parent_comment_id FK "answered comment, optional"
         text body "1-2000 characters, trimmed"
+        timestamptz created_at
+    }
+    EMAIL_LOG {
+        bigint log_id PK
+        bigint transition_id FK "the review"
+        bigint idea_id FK
+        text to_email "submitter"
+        text subject
+        text status "PENDING, SENT, SIMULATED, FAILED, NOT_CONFIGURED"
+        text detail "error text"
         timestamptz created_at
     }
 ```
