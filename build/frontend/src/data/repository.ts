@@ -5,6 +5,7 @@ import type {
   Category,
   CommentItem,
   CategoryInput,
+  DigestEntry,
   Idea,
   IdeaDetails,
   IdeaListItem,
@@ -45,6 +46,12 @@ export interface IdeaRepository {
   listCategories(): Promise<Category[]>;
   /** Admins only; adds a category when category_id is missing, otherwise updates it. */
   saveCategory(input: CategoryInput, actor: AppUser): Promise<Category>;
+
+  /**
+   * Admins only: the 5 best ideas of the 31 days before the simulated day `asOf` (YYYY-MM-DD),
+   * by review ratings plus votes (US-12). No confidential or declined ideas.
+   */
+  getDigest(asOf: string, actor: AppUser): Promise<DigestEntry[]>;
 
   /** Prototype only: restore the demo data. */
   resetDemoData(): Promise<void>;

@@ -132,6 +132,20 @@ export interface StageHistoryEntry extends IdeaStageHistory {
   changed_by_name: string;
 }
 
+/** One idea of the top ideas digest (US-12): ratings of all reviews in the window plus votes. */
+export interface DigestEntry {
+  idea_id: number;
+  title: string;
+  category_name: string;
+  /** null for anonymous ideas. */
+  submitter_name: string | null;
+  is_anonymous: boolean;
+  review_count: number;
+  rating_sum: number;
+  vote_count: number;
+  total: number;
+}
+
 /** Everything shown after a click on "Details". */
 export interface IdeaDetails {
   idea: IdeaListItem;

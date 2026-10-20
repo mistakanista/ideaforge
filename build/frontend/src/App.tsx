@@ -3,6 +3,7 @@ import { Navigate, NavLink, Route, Routes, useLocation, useNavigate } from 'reac
 import { OFFICE_LABELS, ROLE_LABELS } from './config';
 import { repository } from './data';
 import { AdminPage } from './pages/AdminPage';
+import { DigestPage } from './pages/DigestPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { FirstLoginPage } from './pages/FirstLoginPage';
 import { LoginPage } from './pages/LoginPage';
@@ -30,6 +31,7 @@ function Header() {
             <NavLink to="/dashboard">Dashboard</NavLink>
             <NavLink to="/submit">Submit an idea</NavLink>
             {user.role === 'ADMIN' && <NavLink to="/admin">Admin</NavLink>}
+            {user.role === 'ADMIN' && <NavLink to="/digest">Top ideas digest</NavLink>}
           </nav>
         )}
 
@@ -122,6 +124,7 @@ export function App() {
           <Route path="/dashboard" element={<RequireAuth><DashboardPage /></RequireAuth>} />
           <Route path="/submit" element={<RequireAuth><SubmitIdeaPage /></RequireAuth>} />
           <Route path="/admin" element={<RequireAuth><AdminPage /></RequireAuth>} />
+          <Route path="/digest" element={<RequireAuth><DigestPage /></RequireAuth>} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </main>

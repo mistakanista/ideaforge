@@ -2,6 +2,7 @@
 // and enforces the same rules the database triggers will enforce later.
 import { SCORING_CRITERIA } from '../config';
 import { submitterLabel } from '../lib/anonymity';
+import { inDigestWindow, rankDigest } from '../lib/digest';
 import { canSeeIdea } from '../lib/ideaQuery';
 import { canReview, nextStage } from '../lib/reviewRules';
 import { resubmitRuleViolation } from '../lib/resubmitRules';
@@ -327,6 +328,33 @@ export const mockRepository: IdeaRepository = {
     category.is_active = input.is_active;
     save(db);
     return category;
+  },
+
+  async getDigest(asOf, actor) {
+    const db = load();
+    requireAdmin(db, actor);
+    // The mock data has no time per score, so the ratings are the current scores of all reviewers
+    // of an idea that has at least one review (not a decline) in the window.
+    const candidates = db.ideas
+      .filter((idea) => !idea.is_confidential && idea.current_stage !== 'DECLINED')
+      .flatMap((idea) => {
+        const reviews = db.history.filter(
+          (h) => h.idea_id === idea.idea_id && h.from_stage !== null && h.to_stage !== 'DECLINED' && inDigestWindow(h.changed_at, asOf),
+        );
+        if (reviews.length === 0) return [];
+        return [{
+          idea_id: idea.idea_id,
+          title: idea.title,
+          category_name: db.categories.find((c) => c.category_id === idea.category_id)?.name ?? 'Unknown',
+          submitter_name: idea.is_anonymous ? null : userName(db, idea.submitter_id),
+          is_anonymous: !!idea.is_anonymous,
+          review_count: reviews.length,
+          rating_sum: db.scores.filter((s) => s.idea_id === idea.idea_id).reduce((sum, s) => sum + s.score, 0),
+          vote_count: db.votes.filter((v) => v.idea_id === idea.idea_id).length,
+          created_at: idea.created_at,
+        }];
+      });
+    return rankDigest(candidates);
   },
 
   async resetDemoData() {

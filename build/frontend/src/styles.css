@@ -252,3 +252,8 @@ textarea { resize: vertical; }
 .comment-form-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 .comment-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 .comment .btn-small { margin-top: 0.5rem; min-height: var(--tap); }
+
+/* Top ideas digest (US-12) */
+.digest-date { max-width: 14rem; }
+input[type='date'] { font: inherit; color: var(--text); background: var(--white); border: 1px solid #9aa3b1; border-radius: 8px; padding: 0.55rem 0.75rem; min-height: var(--tap); width: 100%; }
+.digest-table td.num, .digest-table th.num { text-align: right; white-space: nowrap; }

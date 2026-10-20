@@ -2,7 +2,7 @@
 // stage history and votes come from the database, where triggers and row level security enforce the
 // rules (see build/supabase/migrations). The user list and role changes use app_user (US-5); category
 // changes use the category table (US-5); only the demo data reset is still taken from mockRepository.
-import type { AppUser, Category, CommentItem, IdeaDetails } from '../types';
+import type { AppUser, Category, CommentItem, DigestEntry, IdeaDetails } from '../types';
 import { mockRepository } from './mockRepository';
 import { RuleViolation, type IdeaRepository } from './repository';
 import {
@@ -207,5 +207,14 @@ export const supabaseRepository: IdeaRepository = {
     if (data.length === 0) throw new RuleViolation('You are not allowed to change this category.');
     return toCategory(data[0]);
   },
+
+  // The database function checks the admin role, leaves out confidential and declined ideas and
+  // hides the submitter of anonymous ideas (migration 20261021090000_digest_top_ideas.sql).
+  async getDigest(asOf): Promise<DigestEntry[]> {
+    const { data, error } = await getSupabaseClient().rpc('digest_top_ideas', { p_as_of: asOf });
+    if (error) throw toAppError(error);
+    return (data as DigestEntry[]).map((row) => ({ ...row, submitter_name: row.submitter_name ?? null }));
+  },
+
   resetDemoData: () => mockRepository.resetDemoData(),
 };
