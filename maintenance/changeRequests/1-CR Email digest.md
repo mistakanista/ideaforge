@@ -7,16 +7,31 @@ a monthly email digest of the top ideas (by votes and by stage changes), sent to
 Change: The client wants a monthly email digest of the top ideas (by votes and by stage changes), sent to all staff on the first working day of each month.
 Requested by: Client (T&R) · Date: 2026-10-20
 
-### What it touches:
+## What it touches:
 
-Stories and criteria: New story US-12 (`requirements/UserStories/12-EmailDigest.md`). US-8 (Notify submitters) is reused for sending, not changed. Note: US-12 is narrower than CR-1 (admin page, simulated date, test mail only).
-Data: No new tables. One new read function `digest_top_ideas(as_of date)`; one new function `send_digest_test(as_of date)`; `email_log.transition_id` becomes nullable (a digest mail has no transition). New Vault setting `digest_test_recipient`.
-Screens: One new admin-only page "Top ideas digest" (date input, top-5 table, test mail button, status message) and one nav link for admins.
-Rules: Confidential ideas never appear. Anonymous ideas never show the submitter. Only admins see the page and call the functions. Declined ideas are excluded.
-Roles and permissions: ADMIN only (page guard plus check inside the database functions).
-Calculations: Score per idea = sum of impact, cost and feasibility of every scored review in the 31 days before the simulated date + current vote count. Top 5 by score, ties by older idea first.
-Tests: New pgTAP file for the digest functions, vitest tests for `src/lib/digest.ts`, existing suites must still pass (especially `idea_review_email_test.sql`, `idea_transition_test.sql`, `vote_test.sql`).
-Documents: US-12 criteria, buildLog, `build/supabase/README.md`, `design/DataModel/Implemented-Datamodel/dataModel.md`.
+### Stories and criteria: 
+New story US-12 (`requirements/UserStories/12-EmailDigest.md`). US-8 (Notify submitters) is reused for sending, not changed. Note: US-12 is narrower than CR-1 (admin page, simulated date, test mail only).
+
+### Data: 
+No new tables. One new read function `digest_top_ideas(as_of date)`; one new function `send_digest_test(as_of date)`; `email_log.transition_id` becomes nullable (a digest mail has no transition). New Vault setting `digest_test_recipient`.
+
+### Screens: 
+One new admin-only page "Top ideas digest" (date input, top-5 table, test mail button, status message) and one nav link for admins.
+
+### Rules: 
+Confidential ideas never appear. Anonymous ideas never show the submitter. Only admins see the page and call the functions. Declined ideas are excluded.
+
+### Roles and permissions: 
+ADMIN only (page guard plus check inside the database functions).
+
+### Calculations: 
+Score per idea = sum of impact, cost and feasibility of every scored review in the 31 days before the simulated date + current vote count. Top 5 by score, ties by older idea first.
+
+### Tests: 
+New pgTAP file for the digest functions, vitest tests for `src/lib/digest.ts`, existing suites must still pass (especially `idea_review_email_test.sql`, `idea_transition_test.sql`, `vote_test.sql`).
+
+### Documents: 
+US-12 criteria, buildLog, `build/supabase/README.md`, `design/DataModel/Implemented-Datamodel/dataModel.md`.
 
 ### Questions for the client:
 1. CR-1 says "by votes and by stage changes". US-12 counts ratings and votes. Should stage changes get their own weight?

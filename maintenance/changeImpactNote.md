@@ -1,23 +1,35 @@
 # Change impact note
 
 The Change Impact Note
-Copy this into your team's shared document for each change:
+Write the tamplate of the impact note below right in the related change request
 
-CHANGE IMPACT NOTE
+## CHANGE IMPACT NOTE
 Change: [the client's request, in one sentence]
 Requested by: [name] · Date: [ ]
 
-What it touches:
+## What it touches:
 
-Stories and criteria: [ ]
-Data: [ ]
-Screens: [ ]
-Rules: [ ]
-Roles and permissions: [ ]
-Calculations: [ ]
-Tests: [ ]
-Documents: [ ]
-Questions for the client: [ ]
-Risk: [what could break, and how we'll check it hasn't]
-Decision: [do it / do part of it / not now, and why]
-Plan: [slices, in order]
+### Stories and criteria: 
+[ ]
+### Data: 
+[ ]
+### Screens: 
+[ ]
+### Rules: 
+[ ]
+### Roles and permissions: 
+[ ]
+### Calculations: 
+[ ]
+### Tests: 
+[ ]
+Documents: 
+[ ]
+### Questions for the client: 
+[ ]
+### Risk: 
+[what could break, and how we'll check it hasn't]
+### Decision: 
+[do it / do part of it / not now, and why]
+### Plan: 
+[slices, in order]
