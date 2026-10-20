@@ -3,16 +3,16 @@
 As a reviewer of Tallis & Reeve, I want change the state of the idea, so that it can be evaluated and implemented
 
 ## Acceptance criteria
-- [ ] The stages of the idea are Submitted → Reviewing → Piloting → Implemented, or Declined
-- [ ] A reviewer can always decline an idea
-- [ ] An idea has to go through all the stages of the pipeline, it must not jump over a stage
-- [ ] The reviewer gives a reason when he declines an idea, the scores are optional
-- [ ] when moving to another stages the reviewer scores for impact, cost and feasibility from a scale from 1 to 5 (5 is best and least cost), giving a reason is optional
-- [ ] a normal employee must not be able to review an idea
-- [ ] the reviewer must not be able to review his own ideas
-- [ ] the review button or link is only visible for the reviewers
-- [ ] on click the form opens, according to the current stage, the next stage or declined is selectable
-- [ ] if the reviewer selects the next stage, he has to score the idea for impact, cost and feasibility, giving a reason is optional
-- [ ] if the reviewer selects the decline, he has to give a reason, the scores are optional
+- [+] The stages of the idea are Submitted → Reviewing → Piloting → Implemented, or Declined
+- [+] A reviewer can always decline an idea
+- [+] An idea has to go through all the stages of the pipeline, it must not jump over a stage
+- [+] The reviewer gives a reason when he declines an idea, the scores are optional
+- [+] when moving to another stages the reviewer scores for impact, cost and feasibility from a scale from 1 to 5 (5 is best and least cost), giving a reason is optional
+- [+] a normal employee must not be able to review an idea
+- [+] the reviewer must not be able to review his own ideas
+- [+] the review button or link is only visible for the reviewers
+- [+] on click the form opens, according to the current stage, the next stage or declined is selectable
+- [+] if the reviewer selects the next stage, he has to score the idea for impact, cost and feasibility, giving a reason is optional
+- [+] if the reviewer selects the decline, he has to give a reason, the scores are optional
 
-## Status: review
+## Status: passed
