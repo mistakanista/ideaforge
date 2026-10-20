@@ -150,3 +150,18 @@ Builder: Gernot · Checked by: Uli
   - the Google redirect URL still pointed to the localhost, we added another redirect target in Supabase
 - What we learned about building with AI: here Claude did not build so much, but advised us to setup a Netlify projedt and deployment
 - Saved version: US-10 update toml file
+
+## 20.10.2026 · User story 8 : add email notification on reviews
+Builder: Gernot · Checked by: Uli
+
+- What we asked for: user story US-8: add email notification on reviews
+- What the AI changed:
+  - set up an edge function in supabase to send emails
+  - added new table for email logs (for dummy users simulated will be enterd)
+- How we checked it:
+  - with curl the basic email shipment
+  - by reviewing an idea and checking the logs and the email inbox
+- What went wrong, and how we fixed it:
+  - when importing first the edge script, we did not replace the secrets
+- What we learned about building with AI: this is really a fancy supabase feature and CLAUDE had a perfect plan to set it up
+- Saved version: US-8 update buildLogSummary
