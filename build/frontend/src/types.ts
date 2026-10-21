@@ -87,6 +87,39 @@ export interface CommentItem extends Comment {
   by_me: boolean;
 }
 
+/** How two ideas are related (table idea_relation, US-13); read from the first to the second idea. */
+export type IdeaRelationType = 'DUPLICATES' | 'REPLACES' | 'RELATED_TO';
+
+export interface IdeaRelation {
+  relation_id: number;
+  /** First idea: "idea_id duplicates / replaces / is related to related_idea_id". */
+  idea_id: number;
+  related_idea_id: number;
+  relation_type: IdeaRelationType;
+  created_by: number;
+  created_at: string;
+}
+
+/** A reviewer relates two ideas. */
+export interface NewRelationInput {
+  idea_id: number;
+  related_idea_id: number;
+  relation_type: IdeaRelationType;
+}
+
+/** The other idea of a relation, as shown on the detail page, with the label seen from the viewed idea. */
+export interface RelatedIdea {
+  relation_id: number;
+  idea_id: number;
+  title: string;
+  /** "duplicates", "is duplicated by", "replaces", "is replaced by" or "is related to". */
+  label: string;
+  vote_count: number;
+  /** "Anonymous" for other people's anonymous ideas. */
+  submitter_name: string;
+  current_stage: IdeaStage;
+}
+
 export interface IdeaScore {
   idea_id: number;
   reviewer_id: number;
@@ -158,6 +191,8 @@ export interface IdeaDetails {
   idea: IdeaListItem;
   scorecards: ReviewerScorecard[];
   history: StageHistoryEntry[];
+  /** Ideas related to this one (US-13), by title. */
+  related: RelatedIdea[];
 }
 
 export interface NewIdeaInput {

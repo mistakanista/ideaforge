@@ -1,9 +1,10 @@
 // Pure helpers for supabaseRepository: database rows -> app types, database errors -> messages.
 // Kept free of the Supabase client so they can be unit tested.
 import { SCORING_CRITERIA } from '../config';
-import type { AppUser, Category, CommentItem, Idea, IdeaListItem, IdeaStage, OfficeCode, ReviewerScorecard, StageHistoryEntry } from '../types';
+import type { AppUser, Category, CommentItem, Idea, IdeaListItem, IdeaRelationType, IdeaStage, OfficeCode, RelatedIdea, ReviewerScorecard, StageHistoryEntry } from '../types';
 import { RuleViolation } from './repository';
 import { submitterLabel } from '../lib/anonymity';
+import { relationLabel } from '../lib/relationRules';
 
 /** Columns of public.idea read by the app (see supabase/migrations/20261010192020_idea.sql). */
 export const IDEA_COLUMNS =
@@ -279,6 +280,68 @@ export function toCommentError(error: DatabaseError, action: 'add' | 'delete'): 
       return new RuleViolation(
         action === 'delete' ? 'This comment has answers and cannot be deleted.' : 'The comment you answer does not exist.',
       );
+    default:
+      return toAppError(error);
+  }
+}
+
+/** The other idea of a relation: only what the detail page shows (see 20261021164500_idea_relation.sql). */
+const RELATED_IDEA_COLUMNS =
+  'idea_id, title, current_stage, submitter_id, is_anonymous, submitter:app_user!idea_submitter_id_fkey(display_name), vote(user_id)';
+
+/** Relations of one idea, with both ideas embedded (the foreign keys are named after the columns). */
+export const RELATION_COLUMNS =
+  'relation_id, idea_id, related_idea_id, relation_type, ' +
+  `first:idea!idea_relation_idea_id_fkey(${RELATED_IDEA_COLUMNS}), second:idea!idea_relation_related_idea_id_fkey(${RELATED_IDEA_COLUMNS})`;
+
+interface RelatedIdeaRow {
+  idea_id: number;
+  title: string;
+  current_stage: IdeaStage;
+  submitter_id: number;
+  is_anonymous: boolean;
+  submitter?: { display_name: string } | null;
+  vote?: { user_id: number }[] | null;
+}
+
+export interface RelationRow {
+  relation_id: number;
+  idea_id: number;
+  related_idea_id: number;
+  relation_type: IdeaRelationType;
+  first: RelatedIdeaRow | null;
+  second: RelatedIdeaRow | null;
+}
+
+/** The ideas related to idea `ideaId`, by title, with the label seen from that idea. ownUserId is the viewer's app_user.user_id. */
+export function toRelatedIdeas(rows: RelationRow[], ideaId: number, ownUserId: number | null): RelatedIdea[] {
+  return rows
+    .flatMap((row) => {
+      const first = row.idea_id === ideaId;
+      const other = first ? row.second : row.first;
+      if (!other) return [];
+      return [{
+        relation_id: row.relation_id,
+        idea_id: other.idea_id,
+        title: other.title,
+        label: relationLabel(row.relation_type, first),
+        vote_count: other.vote?.length ?? 0,
+        submitter_name: submitterLabel(other.is_anonymous, ownUserId !== null && other.submitter_id === ownUserId, other.submitter?.display_name ?? 'Unknown'),
+        current_stage: other.current_stage,
+      }];
+    })
+    .sort((a, b) => a.title.localeCompare(b.title) || a.idea_id - b.idea_id);
+}
+
+/** Like toAppError, with the messages that fit relating ideas (US-13). */
+export function toRelationError(error: DatabaseError): Error {
+  switch (error.code) {
+    case '23505':
+      return new RuleViolation('These ideas are already related');
+    case '23514':
+      return new RuleViolation('An idea cannot be related to itself');
+    case '23503':
+      return new RuleViolation('The idea you chose does not exist');
     default:
       return toAppError(error);
   }

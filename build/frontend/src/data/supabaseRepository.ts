@@ -11,7 +11,10 @@ import {
   TRANSITION_COLUMNS,
   USER_COLUMNS,
   CATEGORY_COLUMNS,
+  RELATION_COLUMNS,
   toCategory,
+  toRelatedIdeas,
+  toRelationError,
   toCommentError,
   toCommentItem,
   toCategoryError,
@@ -25,6 +28,7 @@ import {
   toAppUser,
   roleUpdateError,
   type IdeaRow,
+  type RelationRow,
   type TransitionRow,
   type UserRow,
 } from './supabaseMapping';
@@ -63,17 +67,24 @@ export const supabaseRepository: IdeaRepository = {
 
   async getIdeaDetails(ideaId): Promise<IdeaDetails | null> {
     const client = getSupabaseClient();
-    const [{ data, error }, transitions, ownId] = await Promise.all([
+    const [{ data, error }, transitions, relations, ownId] = await Promise.all([
       client.from('idea').select(IDEA_WITH_NAMES).eq('idea_id', ideaId).maybeSingle<IdeaRow>(),
       // Row level security returns the history only if the viewer may see the idea.
       client.from('idea_transition').select(TRANSITION_COLUMNS).eq('idea_id', ideaId).returns<TransitionRow[]>(),
+      // Relations in both directions (US-13); they are visible for everyone, confidential ideas have none.
+      client
+        .from('idea_relation')
+        .select(RELATION_COLUMNS)
+        .or(`idea_id.eq.${ideaId},related_idea_id.eq.${ideaId}`)
+        .returns<RelationRow[]>(),
       ownUserId(),
     ]);
     if (error) throw toAppError(error);
     if (transitions.error) throw toAppError(transitions.error);
+    if (relations.error) throw toAppError(relations.error);
     if (!data) return null; // not found, or not visible for the viewer (confidential)
     const idea = toListItem(data, toVoteInfo(data.vote, ownId), ownId);
-    return { idea, ...toReviewDetails(idea, transitions.data) };
+    return { idea, ...toReviewDetails(idea, transitions.data), related: toRelatedIdeas(relations.data, ideaId, ownId) };
   },
 
   async createIdea(input) {
@@ -168,6 +179,15 @@ export const supabaseRepository: IdeaRepository = {
     if (error) throw toCommentError(error, 'delete');
     // Row level security hides rows silently: nothing deleted means not the author's comment.
     if (data.length === 0) throw new RuleViolation('You are not allowed to delete this comment.');
+  },
+
+  async relateIdeas(input) {
+    // The reviewer and the time are set by the database (trigger idea_relation_check), which also
+    // rejects confidential and declined ideas; the unique pair index allows one relation per pair.
+    const { error } = await getSupabaseClient()
+      .from('idea_relation')
+      .insert({ idea_id: input.idea_id, related_idea_id: input.related_idea_id, relation_type: input.relation_type });
+    if (error) throw toRelationError(error);
   },
 
   async listUsers(): Promise<AppUser[]> {

@@ -12,6 +12,7 @@ import type {
   IdeaListItem,
   NewCommentInput,
   NewIdeaInput,
+  NewRelationInput,
   ReviewInput,
   UserRole,
 } from '../types';
@@ -39,6 +40,12 @@ export interface IdeaRepository {
 
   /** The author only, and only while nobody has answered the comment. */
   deleteComment(commentId: number, actor: AppUser): Promise<void>;
+
+  /**
+   * Reviewers only (also for their own ideas): relates two ideas that are not confidential or declined,
+   * once per pair (US-13).
+   */
+  relateIdeas(input: NewRelationInput, reviewer: AppUser): Promise<void>;
 
   listUsers(): Promise<AppUser[]>;
   /** Admins only; the last active admin cannot be downgraded. */

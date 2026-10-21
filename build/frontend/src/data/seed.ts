@@ -2,7 +2,7 @@
 // with votes, comments, reviewer scores and stage history. Same result on every reset.
 import { SCORING_CRITERIA } from '../config';
 import { canSeeIdea } from '../lib/ideaQuery';
-import type { AppUser, Category, Comment, Idea, IdeaScore, IdeaStage, IdeaStageHistory, OfficeCode, UserRole, Vote } from '../types';
+import type { AppUser, Category, Comment, Idea, IdeaRelation, IdeaScore, IdeaStage, IdeaStageHistory, OfficeCode, UserRole, Vote } from '../types';
 
 export interface Database {
   users: AppUser[];
@@ -11,6 +11,7 @@ export interface Database {
   history: IdeaStageHistory[];
   votes: Vote[];
   comments: Comment[];
+  relations: IdeaRelation[];
   scores: IdeaScore[];
 }
 
@@ -289,5 +290,5 @@ export function createSeed(): Database {
     created_at,
   }));
 
-  return { users, categories, ideas, history, votes, comments, scores };
+  return { users, categories, ideas, history, votes, comments, relations: [], scores };
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { RuleViolation } from './repository';
-import { lastActivityAt, lastReviewedAt, NO_VOTES, toAppError, toIdea, toListItem, toReviewDetails, toVoteInfo, toAppUser, roleUpdateError, toCategory, toCategoryError, toCommentError, type IdeaRow, type TransitionRow } from './supabaseMapping';
+import { lastActivityAt, lastReviewedAt, NO_VOTES, toAppError, toIdea, toListItem, toReviewDetails, toVoteInfo, toAppUser, roleUpdateError, toCategory, toCategoryError, toCommentError, toRelatedIdeas, toRelationError, type IdeaRow, type RelationRow, type TransitionRow } from './supabaseMapping';
 
 const row: IdeaRow = {
   idea_id: 61,
@@ -231,5 +231,40 @@ describe('toCommentError', () => {
   it('keeps the messages of the database rules and falls back to the general ones', () => {
     expect(toCommentError({ code: 'P0001', message: 'Confidential ideas cannot get comments' }, 'add').message).toBe('Confidential ideas cannot get comments');
     expect(toCommentError({ code: '42501', message: 'denied' }, 'add').message).toBe('You are not allowed to do this.');
+  });
+});
+
+describe('toRelatedIdeas', () => {
+  const other = (id: number, title: string, extra = {}) => ({
+    idea_id: id, title, current_stage: 'PILOTING' as const, submitter_id: 9, is_anonymous: false,
+    submitter: { display_name: 'Lena Fischer' }, vote: [{ user_id: 1 }, { user_id: 2 }], ...extra,
+  });
+  const rows: RelationRow[] = [
+    { relation_id: 1, idea_id: 10, related_idea_id: 20, relation_type: 'DUPLICATES', first: other(10, 'Car pool'), second: other(20, 'Ride sharing') },
+    { relation_id: 2, idea_id: 30, related_idea_id: 10, relation_type: 'REPLACES', first: other(30, 'Bike racks', { vote: null }), second: other(10, 'Car pool') },
+  ];
+  it('shows the other idea of each relation with the label seen from the viewed idea, by title', () => {
+    const related = toRelatedIdeas(rows, 10, null);
+    expect(related.map((r) => [r.title, r.label, r.vote_count, r.submitter_name])).toEqual([
+      ['Bike racks', 'is replaced by', 0, 'Lena Fischer'],
+      ['Ride sharing', 'duplicates', 2, 'Lena Fischer'],
+    ]);
+  });
+  it('hides the owner of an anonymous idea, except from the owner', () => {
+    const anon: RelationRow[] = [{ ...rows[0], second: other(20, 'Ride sharing', { is_anonymous: true }) }];
+    expect(toRelatedIdeas(anon, 10, 1)[0].submitter_name).toBe('Anonymous');
+    expect(toRelatedIdeas(anon, 10, 9)[0].submitter_name).toBe('Lena Fischer');
+  });
+  it('skips a relation whose other idea is not visible', () => {
+    expect(toRelatedIdeas([{ ...rows[0], second: null }], 10, null)).toEqual([]);
+  });
+});
+
+describe('toRelationError', () => {
+  it('explains the pair, self and missing idea errors and keeps the rule messages', () => {
+    expect(toRelationError({ code: '23505', message: 'unique' }).message).toBe('These ideas are already related');
+    expect(toRelationError({ code: '23514', message: 'check' }).message).toBe('An idea cannot be related to itself');
+    expect(toRelationError({ code: 'P0001', message: 'Confidential ideas cannot be related' }).message).toBe('Confidential ideas cannot be related');
+    expect(toRelationError({ code: '42501', message: 'denied' })).toBeInstanceOf(RuleViolation);
   });
 });

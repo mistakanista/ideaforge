@@ -7,9 +7,10 @@ import { canSeeIdea } from '../lib/ideaQuery';
 import { canReview, nextStage } from '../lib/reviewRules';
 import { resubmitRuleViolation } from '../lib/resubmitRules';
 import { COMMENT_HAS_ANSWERS, commentRuleViolation } from '../lib/commentRules';
+import { relationLabel, relationRuleViolation } from '../lib/relationRules';
 import { voteRuleViolation } from '../lib/voteRules';
 import { upsertUserByEmail, type SessionProfile } from '../lib/sessionUser';
-import type { AppUser, Category, Idea, IdeaDetails, IdeaListItem, ReviewerScorecard } from '../types';
+import type { AppUser, Category, Idea, IdeaDetails, IdeaListItem, RelatedIdea, ReviewerScorecard } from '../types';
 import { RuleViolation, type IdeaRepository } from './repository';
 import { createSeed, type Database } from './seed';
 
@@ -24,6 +25,7 @@ function load(): Database {
     if (stored) {
       memory = JSON.parse(stored) as Database;
       memory.comments ??= []; // data stored before comments existed
+      memory.relations ??= []; // data stored before relations existed
       return memory;
     }
   } catch {
@@ -130,7 +132,27 @@ export const mockRepository: IdeaRepository = {
             : userName(db, h.changed_by),
       }));
 
-    return { idea: toListItem(db, idea, viewer), scorecards: [...byReviewer.values()], history };
+    // Confidential ideas cannot be related, so every relation is visible; the owner of an anonymous idea is hidden.
+    const related: RelatedIdea[] = db.relations
+      .filter((r) => r.idea_id === ideaId || r.related_idea_id === ideaId)
+      .flatMap((r) => {
+        const first = r.idea_id === ideaId;
+        const other = db.ideas.find((i) => i.idea_id === (first ? r.related_idea_id : r.idea_id));
+        if (!other) return [];
+        const item = toListItem(db, other, viewer);
+        return [{
+          relation_id: r.relation_id,
+          idea_id: other.idea_id,
+          title: other.title,
+          label: relationLabel(r.relation_type, first),
+          vote_count: item.vote_count,
+          submitter_name: item.submitter_name,
+          current_stage: other.current_stage,
+        }];
+      })
+      .sort((a, b) => a.title.localeCompare(b.title) || a.idea_id - b.idea_id);
+
+    return { idea: toListItem(db, idea, viewer), scorecards: [...byReviewer.values()], history, related };
   },
 
   async createIdea(input, submitter) {
@@ -271,6 +293,31 @@ export const mockRepository: IdeaRepository = {
     if (!comment || comment.author_id !== actor.user_id) throw new RuleViolation('You are not allowed to delete this comment.');
     if (db.comments.some((c) => c.parent_comment_id === commentId)) throw new RuleViolation(COMMENT_HAS_ANSWERS);
     db.comments.splice(db.comments.indexOf(comment), 1);
+    save(db);
+  },
+
+  async relateIdeas(input, reviewer) {
+    const db = load();
+    const first = db.ideas.find((i) => i.idea_id === input.idea_id);
+    const second = db.ideas.find((i) => i.idea_id === input.related_idea_id);
+    if (!first) throw new RuleViolation(`Idea ${input.idea_id} does not exist`);
+    if (!second) throw new RuleViolation(`Idea ${input.related_idea_id} does not exist`);
+    // One relation per pair, in either direction.
+    const already = db.relations.some(
+      (r) =>
+        (r.idea_id === first.idea_id && r.related_idea_id === second.idea_id) ||
+        (r.idea_id === second.idea_id && r.related_idea_id === first.idea_id),
+    );
+    const violation = relationRuleViolation(first, second, reviewer, already);
+    if (violation) throw new RuleViolation(violation);
+    db.relations.push({
+      relation_id: nextId(db.relations, (r) => r.relation_id),
+      idea_id: first.idea_id,
+      related_idea_id: second.idea_id,
+      relation_type: input.relation_type,
+      created_by: reviewer.user_id,
+      created_at: new Date().toISOString(),
+    });
     save(db);
   },
 
