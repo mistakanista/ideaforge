@@ -169,3 +169,6 @@
 
 ## 2026-10-20 19:15
 - CR-1 Email digest (US-12), step 5 (documents). `build/supabase/README.md`: new section "Top ideas digest" (the two functions, first working day rule, Vault setting `digest_test_recipient`, tests, limits); settings line of the review emails mentions the new setting. No data model change, so `design/DataModel/Implemented-Datamodel/dataModel.md` is unchanged. The criteria of `12-EmailDigest.md` are NOT ticked yet: they wait for the manual check against the local database (`npm run dev:localdb`, function served, settings script run). Still open for the whole CR: the client's answers to the questions in `maintenance/CR-1-changeImpactNote.md` (stage changes, holidays, mail to all staff, window) and the real scheduled send.
+
+## 2026-10-21 16:45
+- CR-2 Merge ideas, step 1 (change impact note). Impact note written into `maintenance/changeRequests/2-CR Merge ideas.md`. Decisions with the user: ideas are related, not merged (new table `idea_relation`, types duplicates / replaces / is related to, inverse labels shown from the other side); confidential ideas cannot be related; only reviewers relate. Defaults until the client answers: active = not declined, reviewer may relate own idea, no removal of relations. No code or database change. Next: step 2 (migration `idea_relation` with pgTAP tests, database first).

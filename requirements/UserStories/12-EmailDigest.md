@@ -10,4 +10,4 @@ As an employee of Tallis & Reeve, I would like to receive a summary of the top v
 - [] if the first working day of the next month is simulated a test email with the top 5 ideeas is sent to gernotschulmeister28@gmail.com
 
 
-## Status: open
+## Status: review
