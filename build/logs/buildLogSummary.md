@@ -165,3 +165,21 @@ Builder: Gernot · Checked by: Uli
   - when importing first the edge script, we did not replace the secrets
 - What we learned about building with AI: this is really a fancy supabase feature and CLAUDE had a perfect plan to set it up
 - Saved version: US-8 update buildLogSummary
+
+## 20.10.2026 · User story 12 : send monthly idea digest of top 5 ideas
+Builder: Gernot · Checked by: Uli
+
+- What we asked for: user story US-12: send monthly idea digest of top 5 ideas
+- What the AI changed:
+  - added an impact note
+  - added rule that only admin can edit and see the idea digest
+  - created the digest page in front
+  - implmented calendar an date to send emails with the top 5 ideas
+- How we checked it:
+  - we checked the digest frontend page
+  - we checked the visibility
+  - we simulated dates
+  - we sent test emails
+- What went wrong, and how we fixed it: nothing
+- What we learned about building with AI: manages quite easy more complex use cases and logs the remaining deficiencies
+- Saved version: US-12 update buildLogSummary

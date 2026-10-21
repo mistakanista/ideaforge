@@ -54,10 +54,18 @@ The Edge Function `functions/send-email` sends one mail through Gmail (`nodemail
 
 ## Review emails (US-8, step 2)
 Migration `20261020203000_idea_review_email.sql`: after every review made through the API (not by imports or SQL scripts) the trigger `notify_submitter_after_review()` writes a row to `email_log` and asks the Edge Function `send-email` (through `pg_net`, asynchronous) to mail the submitter. The mail names the idea, the new stage, the scores or the decline reason, but not the reviewer. A problem with the mail never blocks the review. The function decides who really gets a mail (`MAIL_REAL_RECIPIENTS`) and sets the log status: `SENT`, `SIMULATED`, `FAILED`; `PENDING` means no answer yet, `NOT_CONFIGURED` means the settings below are missing. Only admins can read `email_log`.
-- Settings per environment (once, in the SQL editor, not saved or committed): `scripts/set_mail_settings.sql` stores `mail_function_url`, `mail_function_secret` (same value as the function secret `MAIL_FUNCTION_SECRET`) and the optional `app_url` in the Vault. Local URL: `http://host.docker.internal:54321/functions/v1/send-email`.
+- Settings per environment (once, in the SQL editor, not saved or committed): `scripts/set_mail_settings.sql` stores `mail_function_url`, `mail_function_secret` (same value as the function secret `MAIL_FUNCTION_SECRET`) the optional `app_url` and the optional `digest_test_recipient` (US-12) in the Vault. Local URL: `http://host.docker.internal:54321/functions/v1/send-email`.
 - Redeploy the function after changes (it now also updates `email_log`): `npx supabase functions deploy send-email`.
 - Locally `db reset` does not store these settings, so run the script again after a reset.
 - Tests: `tests/idea_review_email_test.sql` (18).
+
+## Top ideas digest (US-12, CR-1)
+Migrations `20261021090000_digest_top_ideas.sql` and `20261021100000_digest_test_email.sql`. No new tables.
+- `digest_top_ideas(as_of date)` (admins only, RPC): the 5 best ideas of the 31 days before `as_of` (the day itself is not included). Score = impact + cost + feasibility of every scored review in the window (all reviewers, all stage changes) + current votes; ties: older idea first. Left out: ideas that are DECLINED now, confidential ideas, ideas without a scored review in the window. The submitter name is empty for anonymous ideas. Tests: `tests/digest_top_ideas_test.sql` (14).
+- `is_first_working_day(date)`: Monday to Friday only; the 1st if it is a weekday, otherwise the following Monday. Public holidays are not considered.
+- `send_digest_test(as_of date)` (admins only, RPC): on the first working day of the month it mails the top 5 to the Vault secret `digest_test_recipient`, the same way as the review mails (`email_log`, `pg_net`, Edge Function `send-email`). Returns `NOT_FIRST_WORKING_DAY`, `NOT_CONFIGURED`, `QUEUED` or `FAILED`. Setting: run `scripts/set_mail_settings.sql` once per environment (also after a local `db reset`). Tests: `tests/digest_test_email_test.sql` (19).
+- The frontend page `/digest` (admins) calls both functions. A real monthly mail to all staff (scheduler) is not built; it waits for the client's answers in `maintenance/CR-1-changeImpactNote.md`.
+- Limits: a withdrawn vote leaves no trace, so votes are the current votes. The "declined" rule uses the stage today, not the stage on the simulated date. In the prototype data source (mock) there is no time per score, so ratings there are an approximation and no mail is sent.
 
 ## Tables (public schema)
 - `app_user`, `login_allowlist`: users, roles and sign-in rules (US-0).
