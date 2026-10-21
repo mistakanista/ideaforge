@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
 import { formatDate, MAX_SCORE, SCORING_CRITERIA, STAGE_BY_CODE } from '../config';
 import { repository } from '../data';
+import { canRelate, isRelatable } from '../lib/relationRules';
 import { canReview } from '../lib/reviewRules';
 import { useCurrentUser } from '../session/CurrentUser';
 import type { IdeaDetails as Details, ReviewerScorecard } from '../types';
+import { RelateForm } from './RelateForm';
 import { ReviewForm } from './ReviewForm';
+import { StageBadge } from './StageBadge';
 
 function average(values: number[]): number | null {
   return values.length ? values.reduce((a, b) => a + b, 0) / values.length : null;
@@ -22,6 +25,7 @@ export function IdeaDetails({ ideaId, onReviewed }: { ideaId: number; onReviewed
   const { user } = useCurrentUser();
   const [details, setDetails] = useState<Details | null | undefined>(undefined);
   const [reviewing, setReviewing] = useState(false);
+  const [relating, setRelating] = useState(false);
   const [reloadCount, setReloadCount] = useState(0);
 
   useEffect(() => {
@@ -38,9 +42,16 @@ export function IdeaDetails({ ideaId, onReviewed }: { ideaId: number; onReviewed
   if (details === undefined) return <p className="muted">Loading details…</p>;
   if (details === null) return <p className="muted">This idea is not available.</p>;
 
-  const { idea, scorecards, history } = details;
+  const { idea, scorecards, history, related } = details;
   const overall = average(scorecards.flatMap((c) => Object.values(c.scores)));
   const mayReview = user !== null && canReview(user, idea);
+
+  const mayRelate = user !== null && canRelate(user) && isRelatable(idea);
+
+  function handleRelated() {
+    setRelating(false);
+    setReloadCount((n) => n + 1);
+  }
 
   function handleReviewed() {
     setReviewing(false);
@@ -123,6 +134,38 @@ export function IdeaDetails({ ideaId, onReviewed }: { ideaId: number; onReviewed
           </p>
         )}
       </div>
+
+      {!idea.is_confidential && (
+        <div className="details-section">
+          <div className="section-header">
+            <h4>Related ideas</h4>
+            {mayRelate && !relating && (
+              <button type="button" className="btn btn-secondary btn-small" onClick={() => setRelating(true)}>
+                Relate
+              </button>
+            )}
+          </div>
+          {mayRelate && relating && (
+            <RelateForm idea={idea} relatedIds={related.map((r) => r.idea_id)} onSaved={handleRelated} onCancel={() => setRelating(false)} />
+          )}
+          {related.length === 0 ? (
+            <p className="muted">No related ideas yet.</p>
+          ) : (
+            <ul className="related-list">
+              {related.map((r) => (
+                <li key={r.relation_id}>
+                  <div>
+                    <span className="muted">This idea {r.label}</span> <strong>{r.title}</strong>
+                  </div>
+                  <div className="muted small">
+                    {r.vote_count} {r.vote_count === 1 ? 'vote' : 'votes'} · {r.submitter_name} · <StageBadge stage={r.current_stage} />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
 
       <div className="details-section">
         <h4>Stage history</h4>

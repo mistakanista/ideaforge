@@ -186,6 +186,11 @@ textarea { resize: vertical; }
 .confirm-box p::before { content: '⚠ '; color: var(--error); }
 .confirm-box .form-actions { border-top: none; padding-top: 0.5rem; margin-top: 0; }
 .score-option input:focus-visible + span { outline: 3px solid var(--copper); outline-offset: 2px; }
+/* Related ideas (US-13) */
+.related-list { list-style: none; padding: 0; margin: 0; }
+.related-list li { padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+.related-list li:last-child { border-bottom: none; }
+.related-list .badge { margin-left: 0.15rem; }
 .history { list-style: none; padding: 0; margin: 0; }
 .history li { display: flex; gap: 0.75rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
 .history li:last-child { border-bottom: none; }
