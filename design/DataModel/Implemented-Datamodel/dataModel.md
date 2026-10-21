@@ -3,7 +3,7 @@
 Simple overview of the tables that exist in Supabase today (schema `public`, plus the link to `auth.users`).
 Update this diagram after each Supabase migration.
 
-- Last update: 2026-10-15, after migration `20261015220429_comment.sql` (new table `comment`)
+- Last update: 2026-10-21, after migration `20261021164500_idea_relation.sql` (new table `idea_relation`)
 - Source: `build/supabase/migrations/`
 - Planned full model: `design/DataModel/V2-StammdatenIntegriert/`
 
@@ -21,6 +21,9 @@ erDiagram
     IDEA ||--o{ COMMENT : "gets (never confidential)"
     APP_USER ||--o{ COMMENT : writes
     COMMENT |o--o{ COMMENT : "answered by"
+    IDEA ||--o{ IDEA_RELATION : "is first idea of"
+    IDEA ||--o{ IDEA_RELATION : "is second idea of"
+    APP_USER ||--o{ IDEA_RELATION : "relates (reviewer)"
     IDEA_TRANSITION ||--o| EMAIL_LOG : "mail after review"
 
     AUTH_USERS {
@@ -93,6 +96,14 @@ erDiagram
         text body "1-2000 characters, trimmed"
         timestamptz created_at
     }
+    IDEA_RELATION {
+        bigint relation_id PK
+        bigint idea_id FK "first idea, never confidential or declined"
+        bigint related_idea_id FK "second idea, one relation per pair"
+        idea_relation_type relation_type "DUPLICATES, REPLACES, RELATED_TO"
+        bigint created_by FK "reviewer, set by trigger"
+        timestamptz created_at
+    }
     EMAIL_LOG {
         bigint log_id PK
         bigint transition_id FK "the review"
@@ -108,5 +119,6 @@ erDiagram
 ## Enums
 - `user_role`: STAFF, REVIEWER, ADMIN
 - `idea_stage`: SUBMITTED → UNDER_REVIEW → PILOTING → IMPLEMENTED, or DECLINED
+- `idea_relation_type`: DUPLICATES ("duplicates" / "is duplicated by"), REPLACES ("replaces" / "is replaced by"), RELATED_TO ("is related to" both ways)
 
 `login_allowlist` has no foreign keys. It is checked by `handle_new_user()` when a new Auth user is created.
