@@ -166,3 +166,25 @@ is it a must have, a should have or a could have feature?
 
 ## Answer 25
 The core pipeline capabilities—submitting, browsing, voting, scoring, stage transitions with visible feedback, and the reporting dashboard—are absolute Must Haves for us. Features like stage change notifications and comments sit in our Should Have category, while duplicate checking and the leaderboard are Could Haves. Ultimately, if you're using MoSCoW to prioritize, I'd fight hardest for keeping the core pipeline transparent, as colleagues need to see their ideas going somewhere!
+
+## Prompt 26
+Hello Dev, I heard there is a new requirement to change the owner of an idea, what is it about?
+
+## Answer 26
+Hello Dev, I heard there is a new requirement to change the owner of an idea, what is it about?
+
+## Prompt 27
+Honestly, I haven't thought about that at all, and it hasn't come up on our end. What would you suggest? I'm happy for your team to decide how to handle changing or transferring idea owners, as long as it stays clear and works smoothly for everyone—just make a note of whatever you decide!
+
+## Answer 27
+Hello! Thanks so much for taking on this project—we're really looking forward to getting this off the ground.
+Regarding the idea digest you mentioned, I think there might be a slight mix-up! I haven't asked for an idea digest feature, so that isn't something on my radar. Is there a specific part of the project or another feature you'd like to ask about?
+
+## Prompt 28
+I received a new requirement, that you would like to merge similar ideas. Can you tell me a little more about it please?
+
+## Answer 28
+Honestly, I haven't thought about that at all, and merging ideas hasn't come up on our end. What would you suggest? I'm happy for your team to decide how to handle merging similar ideas, as long as it stays clear and works smoothly for everyone—just make a note of whatever you decide!
+
+
+
