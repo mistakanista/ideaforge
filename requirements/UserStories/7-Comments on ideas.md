@@ -9,8 +9,6 @@ As an employee of Tallis & Reeve, I want to comment of ideas, so that it can be 
 - [+] a comment can be deleted by the creator as long as no one has answered to the comment
 - [+] no comments on confidential ideas
 - [+] the comments are opened on a click on the button or link show comments, with number of comments in brackets
-- [?] there is a pagebrowser for ideas with more than 10 comments
-UST: need mor context, see idea for water refil stations
-- the pagebrowser should appear after 10 initial comments, the replies do not count, but I also did not test it so far
+- [+] there is a pagebrowser for ideas with more than 10 comments
 
-## Status: review
+## Status: passed
