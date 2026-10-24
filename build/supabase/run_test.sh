@@ -1,0 +1,1 @@
+for f in supabase/tests/seed_test.sql $(ls supabase/tests/*.sql | grep -v seed_test); do out=$(docker exec -i supabase_db_build psql -U postgres -d postgres -q -t < "$f" 2>&1); echo "$f: $(echo "$out" | grep -c '^ *ok') ok, $(echo "$out" | grep -c 'not ok') not ok"; echo "$out" | grep -E 'not ok|ERROR'; done
